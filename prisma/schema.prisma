@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  GENERAL
+  RENTER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VehicleStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                   String             @id @default(cuid())
+  email                String             @unique
+  phone                String             @unique
+  passwordHash         String?
+  googleId             String?            @unique
+  fullName             String
+  role                 UserRole           @default(GENERAL)
+  verificationStatus   VerificationStatus @default(PENDING)
+  nidOrPassportUrl     String?
+  drivingLicenseUrl    String?
+  ownershipPaperUrl    String?
+  passportPhotoUrl     String?
+  verificationNote     String?
+  verificationReviewedAt DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  vehicles             Vehicle[]
+}
+
+model Vehicle {
+  id                 String        @id @default(cuid())
+  ownerId            String
+  owner              User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  brand              String
+  model              String
+  year               Int
+  registrationNumber String
+  dailyRate          Int
+  vehiclePhotoUrl    String
+  ownershipPaperUrl  String
+  insurancePaperUrl  String?
+  status             VehicleStatus @default(PENDING)
+  reviewNote         String?
+  reviewedAt         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
