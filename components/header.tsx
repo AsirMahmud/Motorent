@@ -52,7 +52,7 @@ export function Header({ forcedRole }: HeaderProps) {
   ).length;
 
   const renterNavLinks = [
-    { href: '/', label: 'Explore', icon: MapPin },
+    { href: '/home', label: 'Explore', icon: MapPin },
     { href: '/browse', label: 'Browse', icon: Search_ },
     { href: '/renter-dashboard', label: 'My Bookings', icon: Calendar },
     { href: '/messages', label: 'Messages', icon: MessageSquare },
@@ -105,7 +105,7 @@ export function Header({ forcedRole }: HeaderProps) {
                 href={link.href}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive(link.href) && link.href !== '/'
                     ? 'bg-primary/10 text-primary'
-                    : isActive(link.href) && link.href === '/'
+                    : isActive(link.href) && link.href === '/home'
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
@@ -119,7 +119,7 @@ export function Header({ forcedRole }: HeaderProps) {
 
         {showGuestChrome && (
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            <Link href="/" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
+            <Link href="/home" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/home') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
               <MapPin size={15} /> Explore
             </Link>
             <Link href="/browse" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/browse') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
@@ -265,7 +265,7 @@ export function Header({ forcedRole }: HeaderProps) {
             </>
           ) : showGuestChrome ? (
             <>
-              <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/home" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 <MapPin size={18} /> Explore
               </Link>
               <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>

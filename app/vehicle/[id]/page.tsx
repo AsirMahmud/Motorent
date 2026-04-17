@@ -11,6 +11,7 @@ import {
   Star, MapPin, Fuel, Users, Zap,
   ShieldCheck, Check, Info, ArrowLeft,
   Clock, CalendarDays, CalendarRange, Layers, LayoutDashboard,
+  FileText, AlertCircle,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -353,16 +354,98 @@ export default function VehicleDetailPage() {
                         <span>Min. Booking</span>
                         <span>1 Day</span>
                       </div>
+
+                      {/* KYC gate — shown only to renters who aren't approved */}
+                      {currentUser?.role === 'renter' && currentUser.kycStatus !== 'verified' && (
+                        <div className={`rounded-2xl p-4 border text-sm ${
+                          currentUser.kycStatus === 'pending'
+                            ? 'bg-amber-50 border-amber-200'
+                            : currentUser.kycStatus === 'rejected'
+                              ? 'bg-red-50 border-red-200'
+                              : 'bg-primary/5 border-primary/20'
+                        }`}>
+                          {currentUser.kycStatus === 'none' && (
+                            <div className="flex items-start gap-2.5">
+                              <FileText className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                              <div>
+                                <p className="font-black text-foreground">Verify to book</p>
+                                <p className="text-muted-foreground text-xs mt-0.5">
+                                  Add your NID and driving license. One-time admin check — takes 24 h.
+                                </p>
+                                <button
+                                  onClick={() => router.push('/kyc')}
+                                  className="mt-2 text-primary font-black text-xs hover:underline"
+                                >
+                                  Add details →
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {currentUser.kycStatus === 'pending' && (
+                            <div className="flex items-start gap-2.5">
+                              <Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="font-black text-amber-800">KYC under review</p>
+                                <p className="text-amber-700 text-xs mt-0.5">
+                                  Admin is reviewing your documents. You can book once approved — usually within 24 h.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {currentUser.kycStatus === 'rejected' && (
+                            <div className="flex items-start gap-2.5">
+                              <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="font-black text-red-800">KYC rejected</p>
+                                {currentUser.verificationNote && (
+                                  <p className="text-red-700 text-xs mt-0.5">{currentUser.verificationNote}</p>
+                                )}
+                                <button
+                                  onClick={() => router.push('/kyc')}
+                                  className="mt-2 text-red-700 font-black text-xs hover:underline"
+                                >
+                                  Resubmit documents →
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <Button
                         size="lg"
                         className="w-full h-16 text-xl font-black uppercase rounded-2xl shadow-xl shadow-primary/20"
                         onClick={() => {
-                          if (!currentUser) router.push('/login');
-                          else setShowBookingForm(true);
+                          if (!currentUser) { router.push('/login'); return; }
+                          // Renters with no docs: redirect to KYC
+                          if (currentUser.role === 'renter' && currentUser.kycStatus === 'none') {
+                            router.push('/kyc'); return;
+                          }
+                          // Renters with rejected docs: redirect to KYC
+                          if (currentUser.role === 'renter' && currentUser.kycStatus === 'rejected') {
+                            router.push('/kyc'); return;
+                          }
+                          // Renters with pending KYC: cannot book yet
+                          if (currentUser.role === 'renter' && currentUser.kycStatus === 'pending') {
+                            return;
+                          }
+                          setShowBookingForm(true);
                         }}
-                        disabled={!vehicle.isAvailable}
+                        disabled={
+                          !vehicle.isAvailable ||
+                          (currentUser?.role === 'renter' && currentUser.kycStatus === 'pending')
+                        }
                       >
-                        {vehicle.isAvailable ? 'Request Booking' : 'Booked Out'}
+                        {!vehicle.isAvailable
+                          ? 'Booked Out'
+                          : currentUser?.role === 'renter' && currentUser.kycStatus === 'none'
+                            ? 'Verify to Book'
+                            : currentUser?.role === 'renter' && currentUser.kycStatus === 'rejected'
+                              ? 'Resubmit Docs to Book'
+                              : currentUser?.role === 'renter' && currentUser.kycStatus === 'pending'
+                                ? 'Awaiting KYC Approval'
+                                : 'Request Booking'
+                        }
                       </Button>
 
                       <div className="text-center">

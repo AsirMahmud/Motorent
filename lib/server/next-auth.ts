@@ -38,24 +38,24 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
+        // Only update name + googleId — never touch verificationStatus on login
         await db.user.update({
           where: { id: existingByEmail.id },
           data: {
             fullName: user.name || existingByEmail.fullName,
             googleId: account.providerAccountId,
-            verificationStatus: "APPROVED",
           },
         });
         return true;
       }
 
+      // New Google user — starts with PENDING so admin can review KYC docs before booking
       await db.user.create({
         data: {
           email: user.email,
           phone: `google-${Date.now()}`,
           fullName: user.name || "Google User",
           role: "GENERAL",
-          verificationStatus: "APPROVED",
           googleId: account.providerAccountId,
         },
       });

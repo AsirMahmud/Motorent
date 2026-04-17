@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -7,14 +8,16 @@ import {
   ClipboardCheck,
   Users,
   Bike,
+  UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const links = [
+const links: { href: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; exact?: boolean }[] = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
   { href: '/admin/owners', label: 'Owners', icon: Users },
-] as const;
+  { href: '/admin/renters', label: 'Renters', icon: UserCircle },
+];
 
 export function AdminSidebar() {
   const pathname = usePathname();

@@ -7,7 +7,7 @@ type LoginBody = {
   email?: string;
   password?: string;
   /** When set, login succeeds only if the account matches this portal. */
-  intent?: "ADMIN" | "OWNER" | "RENTER";
+  intent?: "ADMIN" | "OWNER";
 };
 
 export async function POST(request: Request) {
@@ -28,9 +28,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  if (user.role === "GENERAL" && !user.passwordHash) {
+  // GENERAL users always use Google OAuth — never email/password
+  if (user.role === "GENERAL") {
     return NextResponse.json(
-      { error: "This account uses Google sign-in. Please continue with Google." },
+      { error: "Renter accounts use Google sign-in. Please use the Google button on the renter login page." },
       { status: 403 }
     );
   }
@@ -44,11 +45,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  // Owners must be APPROVED to login
+  // Owners must be APPROVED before they can log in
   if (user.role === "OWNER" && user.verificationStatus !== "APPROVED") {
     return NextResponse.json(
       {
-        error: "Your owner account is pending admin approval. You will be notified by email.",
+        error: "Your owner account is pending admin approval. You will be notified by email once reviewed.",
         verificationStatus: user.verificationStatus,
       },
       { status: 403 }
@@ -57,21 +58,14 @@ export async function POST(request: Request) {
 
   if (body.intent === "ADMIN" && user.role !== "ADMIN") {
     return NextResponse.json(
-      { error: "This email is not an admin account. Use the owner or renter sign-in page." },
+      { error: "This email is not an admin account. Use the owner sign-in page." },
       { status: 403 }
     );
   }
 
   if (body.intent === "OWNER" && user.role !== "OWNER") {
     return NextResponse.json(
-      { error: "This email is not an owner account. Use the admin or renter sign-in page." },
-      { status: 403 }
-    );
-  }
-
-  if (body.intent === "RENTER" && user.role !== "GENERAL") {
-    return NextResponse.json(
-      { error: "This email is not a renter account. Use the owner or admin sign-in page." },
+      { error: "This email is not an owner account. Use the admin sign-in page." },
       { status: 403 }
     );
   }

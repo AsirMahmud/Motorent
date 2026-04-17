@@ -111,3 +111,15 @@ model Booking {
   @@index([renterId])
   @@index([status])
 }
+
+model LandingPageContent {
+  id                String   @id @default("singleton")
+  heroTitle         String   @default("Ride the Extraordinary.")
+  heroSubtitle      String   @default("Experience the ultimate freedom of movement. From high-performance bikes to luxury SUVs, find the perfect ride for every journey.")
+  heroCtaText       String   @default("Explore Vehicles")
+  stats             Json?    // Array of { label, value, icon }
+  features          Json?    // Array of { title, description, icon, color }
+  categories        Json?    // Array of { name, count, image, link }
+  faqs              Json?    // Array of { q, a }
+  updatedAt         DateTime @updatedAt
+}

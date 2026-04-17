@@ -9,7 +9,7 @@ const options = [
   {
     href: '/login/renter',
     title: 'Renter',
-    description: 'Sign in with email or Google to browse and book vehicles.',
+    description: 'Sign in with Google to browse and book vehicles.',
     icon: UserCircle2,
     accent: 'bg-emerald-500',
   },
@@ -47,9 +47,7 @@ export default function LoginHubPage() {
             {options.map((opt) => (
               <Link key={opt.href} href={opt.href}>
                 <Card className="p-5 rounded-2xl border border-border/60 shadow-md hover:shadow-lg hover:border-primary/30 transition-all flex items-start gap-4 group">
-                  <div
-                    className={`${opt.accent} text-white p-3 rounded-xl shrink-0 shadow-lg group-hover:scale-105 transition-transform`}
-                  >
+                  <div className={`${opt.accent} text-white p-3 rounded-xl shrink-0 shadow-lg group-hover:scale-105 transition-transform`}>
                     <opt.icon size={22} />
                   </div>
                   <div className="text-left min-w-0">
@@ -63,12 +61,11 @@ export default function LoginHubPage() {
             ))}
           </div>
 
-          <p className="text-center text-muted-foreground mt-8 text-sm space-x-1">
-            <span>New renter?</span>
-            <Link href="/signup/renter" className="text-primary font-bold hover:underline">Sign up as renter</Link>
-            <span>·</span>
-            <span>New host?</span>
-            <Link href="/signup" className="text-primary font-bold hover:underline">Apply as owner</Link>
+          <p className="text-center text-muted-foreground mt-8 text-sm">
+            Want to list your vehicle?{' '}
+            <Link href="/signup" className="text-primary font-bold hover:underline">
+              Apply as owner
+            </Link>
           </p>
         </div>
       </div>

@@ -88,13 +88,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Admins cannot create bookings" }, { status: 403 });
   }
 
-  if (user.verificationStatus !== "APPROVED") {
+  // Only GENERAL (renter) accounts require KYC approval before booking
+  if (user.role === "GENERAL" && user.verificationStatus !== "APPROVED") {
+    const hasSubmittedDocs = Boolean(user.nidOrPassportUrl || user.drivingLicenseUrl);
     return NextResponse.json(
       {
         error:
-          user.verificationStatus === "PENDING"
+          user.verificationStatus === "PENDING" && hasSubmittedDocs
             ? "Your KYC is under review. You can book once admin approves your documents."
-            : "Your KYC was rejected. Please contact support to resubmit documents.",
+            : user.verificationStatus === "REJECTED"
+              ? "Your KYC was rejected. Please resubmit your documents for review."
+              : "Please submit your NID and driving license so an admin can approve your account before booking.",
         verificationStatus: user.verificationStatus,
       },
       { status: 403 }

@@ -85,22 +85,27 @@ export default function AdminApprovalsPage() {
   const [rejectNote, setRejectNote] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [pendingRenters, setPendingRenters] = useState<PendingOwner[]>([]);
+
   const loadPending = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [ownerRes, vehicleRes] = await Promise.all([
+      const [ownerRes, vehicleRes, renterRes] = await Promise.all([
         fetch('/api/admin/owners/pending'),
         fetch('/api/admin/vehicles/pending'),
+        fetch('/api/admin/renters?status=PENDING'),
       ]);
       const ownerData = await ownerRes.json();
       const vehicleData = await vehicleRes.json();
+      const renterData = await renterRes.json();
       if (!ownerRes.ok || !vehicleRes.ok) {
         setError(ownerData.error || vehicleData.error || 'Unable to load pending requests');
         return;
       }
       setOwners(ownerData.owners || []);
       setVehicles(vehicleData.vehicles || []);
+      setPendingRenters(renterData.renters || []);
     } catch {
       setError('Failed to load admin queue');
     } finally {
@@ -123,7 +128,12 @@ export default function AdminApprovalsPage() {
     setActionLoading(true);
     try {
       if (rejectTarget.type === 'owner') {
-        await fetch(`/api/admin/owners/${rejectTarget.id}/status`, {
+        // Check if this is a renter reject (pendingRenters list contains this id)
+        const isRenter = pendingRenters.some(r => r.id === rejectTarget.id);
+        const endpoint = isRenter
+          ? `/api/admin/renters/${rejectTarget.id}/status`
+          : `/api/admin/owners/${rejectTarget.id}/status`;
+        await fetch(endpoint, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'REJECTED', note: rejectNote || undefined }),
@@ -154,6 +164,25 @@ export default function AdminApprovalsPage() {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const approveRenter = async (id: string) => {
+    setActionLoading(true);
+    try {
+      await fetch(`/api/admin/renters/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'APPROVED' }),
+      });
+      loadPending();
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openRejectRenter = (id: string) => {
+    setRejectTarget({ type: 'owner', id }); // reuse owner type for the dialog
+    setRejectOpen(true);
   };
 
   const approveVehicle = async (id: string) => {
@@ -198,8 +227,11 @@ export default function AdminApprovalsPage() {
         )}
 
         {!loading && !error && (
-          <Tabs defaultValue="owners" className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
+          <Tabs defaultValue="renters" className="w-full">
+            <TabsList className="grid w-full max-w-lg grid-cols-3">
+              <TabsTrigger value="renters" className="font-bold">
+                Renters ({pendingRenters.length})
+              </TabsTrigger>
               <TabsTrigger value="owners" className="font-bold">
                 Owners ({owners.length})
               </TabsTrigger>
@@ -207,6 +239,46 @@ export default function AdminApprovalsPage() {
                 Vehicles ({vehicles.length})
               </TabsTrigger>
             </TabsList>
+
+            {/* Pending Renters tab */}
+            <TabsContent value="renters" className="mt-4 space-y-4">
+              {pendingRenters.length === 0 ? (
+                <Card className="p-8 text-center text-muted-foreground text-sm">No pending renter KYC submissions.</Card>
+              ) : (
+                pendingRenters.map((renter) => (
+                  <Card key={renter.id} className="overflow-hidden border-0 shadow-md">
+                    <div className="border-b border-border/80 bg-muted/30 px-5 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-black text-lg">{renter.fullName}</p>
+                        <p className="text-sm text-muted-foreground">{renter.email} · {renter.phone}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Submitted {new Date(renter.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm" className="font-bold shrink-0 mt-2 sm:mt-0" asChild>
+                        <Link href={`/admin/renters/${renter.id}`}>Full profile</Link>
+                      </Button>
+                    </div>
+                    <div className="px-5 py-4 space-y-4">
+                      <DocLinks
+                        items={[
+                          { label: 'NID / Passport', href: renter.nidOrPassportUrl },
+                          { label: 'Driving license', href: renter.drivingLicenseUrl },
+                        ]}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" className="font-bold" disabled={actionLoading} onClick={() => openRejectRenter(renter.id)}>
+                          <XCircle className="mr-1.5 h-4 w-4" /> Reject
+                        </Button>
+                        <Button size="sm" className="font-bold" disabled={actionLoading} onClick={() => approveRenter(renter.id)}>
+                          <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve KYC
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
 
             <TabsContent value="owners" className="mt-4 space-y-4">
               {owners.length === 0 ? (

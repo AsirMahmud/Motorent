@@ -15,7 +15,21 @@ export default function Home() {
   const { vehicles, currentUser, authReady } = useApp();
   const router = useRouter();
 
-  // All state/memos must be declared before any conditional return
+  // Auth guard — redirect to login once auth state is known
+  useEffect(() => {
+    if (authReady && !currentUser) {
+      router.replace('/login');
+    }
+  }, [authReady, currentUser, router]);
+
+  // Show a loading state while we wait for auth check
+  if (!authReady || !currentUser) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
   const [filter, setFilter] = useState<'all' | 'bike' | 'car'>('all');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +44,7 @@ export default function Home() {
 
   const selectedVehicle = useMemo(() => vehicles.find(v => v.id === selectedVehicleId), [vehicles, selectedVehicleId]);
 
+  // Map marker positions (simulate for demo)
   const markerPositions = useMemo(() => {
     return filteredVehicles.map((v, i) => ({
       ...v,
@@ -37,22 +52,6 @@ export default function Home() {
       left: `${15 + (i % 5) * 16 + Math.cos(i) * 4}%`,
     }));
   }, [filteredVehicles]);
-
-  // Auth guard — redirect to login once auth state is resolved
-  useEffect(() => {
-    if (authReady && !currentUser) {
-      router.replace('/login');
-    }
-  }, [authReady, currentUser, router]);
-
-  // Show spinner while auth is resolving or redirect is in-flight
-  if (!authReady || !currentUser) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen bg-background flex flex-col font-sans overflow-hidden">
@@ -243,7 +242,7 @@ export default function Home() {
         {/* Mobile Bottom Nav */}
         <footer className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t px-6 py-2 flex justify-around items-center z-50 md:hidden">
           {[
-            { icon: MapPin, label: 'Explore', active: true, href: '/' },
+            { icon: MapPin, label: 'Explore', active: true, href: '/home' },
             { icon: Search, label: 'Browse', active: false, href: '/browse' },
             { icon: Car, label: 'Bookings', active: false, href: currentUser ? '/renter-dashboard' : '/login' },
             { icon: Shield, label: 'Profile', active: false, href: currentUser ? (currentUser.role === 'admin' ? '/admin' : currentUser.role === 'owner' ? '/owner-dashboard' : '/renter-dashboard') : '/login' },

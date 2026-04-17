@@ -20,12 +20,17 @@ export function mapApiUserToAppUser(api: ApiAuthUser): User {
   const role: UserRole =
     api.role === 'ADMIN' ? 'admin' : api.role === 'OWNER' ? 'owner' : 'renter';
 
+  // 'none'    — PENDING but no documents submitted yet (fresh account)
+  // 'pending' — PENDING with at least one doc uploaded (waiting for admin)
+  // 'rejected'— admin reviewed and rejected
+  // 'verified'— admin approved
+  const hasSubmittedDocs = Boolean(api.nidOrPassportUrl || api.drivingLicenseUrl);
   const kycStatus: KYCStatus =
     api.verificationStatus === 'APPROVED'
       ? 'verified'
       : api.verificationStatus === 'REJECTED'
         ? 'rejected'
-        : api.verificationStatus === 'PENDING'
+        : api.verificationStatus === 'PENDING' && hasSubmittedDocs
           ? 'pending'
           : 'none';
 

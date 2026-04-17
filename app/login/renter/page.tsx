@@ -1,53 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { Bike, Mail, Lock } from 'lucide-react';
+import { Bike, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { AuthPageHeader } from '@/components/auth-page-header';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useApp } from '@/lib/context';
-import { mapApiUserToAppUser } from '@/lib/map-api-user';
 
 export default function RenterLoginPage() {
-  const router = useRouter();
-  const { setCurrentUser } = useApp();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    await signIn('google', { callbackUrl: '/renter-dashboard' });
-  };
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
     setLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, intent: 'RENTER' }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Login failed');
-        return;
-      }
-      setCurrentUser(mapApiUserToAppUser(data.user));
-      router.push('/renter-dashboard');
-    } catch {
-      setError('Unable to sign in. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    await signIn('google', { callbackUrl: '/' });
   };
 
   return (
@@ -60,78 +26,44 @@ export default function RenterLoginPage() {
               <Bike className="text-white" size={30} />
             </div>
             <h1 className="text-3xl font-black uppercase italic tracking-tighter">Renter sign in</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Sign in to browse and book vehicles</p>
+            <p className="text-muted-foreground mt-1 text-sm">Browse and book vehicles instantly</p>
           </div>
 
           <Card className="p-8 rounded-3xl shadow-2xl border-none space-y-6">
-            {/* Email/Password Form */}
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div>
-                <h2 className="text-base font-black mb-0.5">Email & password</h2>
-                <p className="text-xs text-muted-foreground">For accounts created with the renter signup form.</p>
-              </div>
-
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  className="pl-10 h-12 rounded-xl text-base"
-                />
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  className="pl-10 h-12 rounded-xl text-base"
-                />
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl">{error}</p>
+            <Button
+              type="button"
+              size="lg"
+              className="w-full h-14 rounded-xl font-black text-base shadow-xl shadow-primary/20 gap-3"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
               )}
+              {loading ? 'Redirecting…' : 'Continue with Google'}
+            </Button>
 
-              <Button
-                type="submit"
-                className="w-full h-12 rounded-xl font-black text-base shadow-xl shadow-primary/20"
-                disabled={loading || !email || !password}
-              >
-                {loading ? 'Signing in…' : 'Sign In'}
-              </Button>
-            </form>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs font-bold text-muted-foreground">OR</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
-            {/* Google */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground text-center">Sign in with Google (no password needed)</p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-12 rounded-xl font-black text-base"
-                onClick={handleGoogleLogin}
-                disabled={googleLoading}
-              >
-                {googleLoading ? 'Redirecting…' : 'Continue with Google'}
-              </Button>
+            <div className="bg-muted/50 rounded-2xl p-4 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  After sign-in you can <span className="font-bold text-foreground">browse all available vehicles</span> immediately.
+                  To send a booking request, you will be prompted to upload your NID and driving license for a one-time admin KYC check.
+                </p>
+              </div>
             </div>
           </Card>
 
-          <p className="text-center text-muted-foreground mt-6 text-sm space-x-2">
-            <span>New renter?</span>
-            <Link href="/signup/renter" className="text-primary font-bold hover:underline">Sign up with KYC</Link>
+          <p className="text-center text-muted-foreground mt-6 text-sm space-x-1">
+            <span>Want to list vehicles?</span>
+            <Link href="/signup" className="text-primary font-bold hover:underline">Apply as owner</Link>
             <span>·</span>
             <Link href="/login" className="text-primary font-bold hover:underline">All sign-in options</Link>
           </p>
