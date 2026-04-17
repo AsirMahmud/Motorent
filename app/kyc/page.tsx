@@ -3,164 +3,180 @@
 import { Header } from '@/components/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/context';
-import { useState } from 'react';
-import { CheckCircle2, Camera, Upload, ShieldCheck, FileText } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { CheckCircle2, ShieldCheck, FileCheck2, AlertCircle } from 'lucide-react';
+import { OwnerDocumentField } from '@/components/owner-document-field';
+import { mapApiUserToAppUser } from '@/lib/map-api-user';
 
 export default function KYCPage() {
-    const router = useRouter();
-    const { currentUser, updateUser } = useApp();
-    const [step, setStep] = useState<'intro' | 'nid' | 'selfie' | 'success'>('intro');
-    const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { currentUser, setCurrentUser } = useApp();
+  const [nidUrl, setNidUrl] = useState<string | null>(currentUser?.nidUrl ?? null);
+  const [nidName, setNidName] = useState<string | null>(null);
+  const [licenseUrl, setLicenseUrl] = useState<string | null>(currentUser?.licenseUrl ?? null);
+  const [licenseName, setLicenseName] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
+  const uploadCountRef = useRef(0);
 
-    const progress = {
-        intro: 0,
-        nid: 33,
-        selfie: 66,
-        success: 100
-    }[step];
+  const setUploadBusyTracked = (busy: boolean) => {
+    if (busy) uploadCountRef.current += 1;
+    else uploadCountRef.current = Math.max(0, uploadCountRef.current - 1);
+    setUploadBusy(uploadCountRef.current > 0);
+  };
 
-    const handleNext = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            if (step === 'intro') setStep('nid');
-            else if (step === 'nid') setStep('selfie');
-            else if (step === 'selfie') {
-                updateUser({ kycStatus: 'pending' });
-                setStep('success');
-            }
-        }, 1000);
-    };
+  const allReady = nidUrl && licenseUrl;
 
-    const handleFinish = () => {
-        if (currentUser?.role === 'owner') router.push('/owner-dashboard');
-        else router.push('/renter-dashboard');
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!allReady) { setError('Please upload both documents.'); return; }
+    setError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nidOrPassportUrl: nidUrl, drivingLicenseUrl: licenseUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Failed to submit documents.'); return; }
+      setCurrentUser(mapApiUserToAppUser(data.user));
+      setDone(true);
+    } catch {
+      setError('Unable to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
+  const isResubmit = currentUser?.kycStatus === 'rejected';
+
+  if (!currentUser) {
     return (
-        <div className="min-h-screen bg-background flex flex-col font-sans">
-            <Header />
-
-            <div className="flex-1 flex items-center justify-center px-4 py-12">
-                <Card className="w-full max-w-xl p-8 shadow-2xl border-t-8 border-primary rounded-3xl overflow-hidden relative">
-
-                    <div className="absolute top-0 left-0 w-full h-2 bg-muted">
-                        <Progress value={progress} className="h-full rounded-none bg-primary transition-all duration-500" />
-                    </div>
-
-                    {step === 'intro' && (
-                        <div className="space-y-8 py-4 text-center">
-                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                                <ShieldCheck className="w-10 h-10 text-primary" />
-                            </div>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-bold">Identity Verification</h1>
-                                <p className="text-muted-foreground text-lg">
-                                    To ensure safety for everyone, we need to verify your identity before you can {currentUser?.role === 'owner' ? 'list vehicles' : 'book rides'}.
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-4">
-                                <div className="p-4 bg-muted/50 rounded-2xl flex items-start gap-4">
-                                    <FileText className="w-6 h-6 text-primary shrink-0 mt-1" />
-                                    <div>
-                                        <p className="font-bold">National ID</p>
-                                        <p className="text-sm text-muted-foreground">Upload a clear photo of your NID card.</p>
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-muted/50 rounded-2xl flex items-start gap-4">
-                                    <Camera className="w-6 h-6 text-primary shrink-0 mt-1" />
-                                    <div>
-                                        <p className="font-bold">Selfie</p>
-                                        <p className="text-sm text-muted-foreground">Take a quick photo of yourself to match ID.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <Button onClick={handleNext} className="w-full h-14 text-xl rounded-2xl shadow-xl shadow-primary/20">
-                                Start Verification
-                            </Button>
-                        </div>
-                    )}
-
-                    {step === 'nid' && (
-                        <div className="space-y-8 py-4">
-                            <div className="space-y-2 text-center">
-                                <h1 className="text-3xl font-bold">Upload NID</h1>
-                                <p className="text-muted-foreground text-lg">
-                                    Front and back of your National ID card
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="aspect-[3/2] border-2 border-dashed border-muted-foreground/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer group">
-                                    <div className="p-3 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
-                                        <Upload className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <p className="font-medium">Front Side</p>
-                                </div>
-                                <div className="aspect-[3/2] border-2 border-dashed border-muted-foreground/20 rounded-2xl flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer group">
-                                    <div className="p-3 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
-                                        <Upload className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <p className="font-medium">Back Side</p>
-                                </div>
-                            </div>
-
-                            <div className="p-4 bg-amber-50 text-amber-800 rounded-2xl text-sm border border-amber-100 flex gap-3">
-                                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                                <p>Make sure all details on the card are clearly readable and there is no glare on the photo.</p>
-                            </div>
-
-                            <Button onClick={handleNext} disabled={loading} className="w-full h-14 text-xl rounded-2xl">
-                                {loading ? 'Processing...' : 'Verify NID'}
-                            </Button>
-                        </div>
-                    )}
-
-                    {step === 'selfie' && (
-                        <div className="space-y-8 py-4 text-center">
-                            <div className="space-y-2 text-center">
-                                <h1 className="text-3xl font-bold">Take a Selfie</h1>
-                                <p className="text-muted-foreground text-lg">
-                                    Look directly at the camera and ensure good lighting
-                                </p>
-                            </div>
-
-                            <div className="w-64 h-64 rounded-full border-4 border-primary/20 mx-auto overflow-hidden bg-muted flex items-center justify-center relative">
-                                <div className="absolute inset-0 border-4 border-primary rounded-full animate-pulse opacity-20"></div>
-                                <Camera className="w-12 h-12 text-muted-foreground/30" />
-                            </div>
-
-                            <div className="space-y-4 pt-4">
-                                <Button onClick={handleNext} disabled={loading} className="w-full h-14 text-xl rounded-2xl">
-                                    {loading ? 'Verifying Face...' : 'Take Photo'}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 'success' && (
-                        <div className="space-y-8 py-8 text-center animate-in fade-in zoom-in duration-500">
-                            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto scale-110">
-                                <CheckCircle2 className="w-12 h-12 text-green-600" />
-                            </div>
-                            <div className="space-y-3">
-                                <h1 className="text-4xl font-black text-foreground">Verification Submitted!</h1>
-                                <p className="text-muted-foreground text-xl max-w-sm mx-auto">
-                                    Our team will review your identity within 24 hours. You can already explore the platform!
-                                </p>
-                            </div>
-                            <div className="pt-6">
-                                <Button onClick={handleFinish} className="w-full h-16 text-2xl font-bold rounded-2xl shadow-2xl shadow-primary/30 transform hover:scale-[1.02] transition-transform">
-                                    Go to Dashboard
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </Card>
-            </div>
+      <div className="min-h-screen bg-background flex flex-col font-sans">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
         </div>
+      </div>
     );
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col font-sans">
+        <Header />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <Card className="w-full max-w-md p-10 text-center rounded-3xl shadow-2xl border-none">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="text-green-500" size={40} />
+            </div>
+            <h2 className="text-3xl font-black mb-2">Documents Submitted!</h2>
+            <p className="text-muted-foreground mb-4 text-lg">
+              Our team will review within 24 hours.
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-8 text-left">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="text-amber-500 shrink-0 mt-0.5" size={18} />
+                <p className="text-amber-700 text-sm">
+                  You will receive an email notification once your KYC is approved or if
+                  any documents need resubmission.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="w-full h-12 rounded-2xl font-black"
+              onClick={() => router.push('/renter-dashboard')}
+            >
+              Back to Dashboard
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col font-sans">
+      <Header />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-lg p-8 shadow-2xl rounded-3xl border-none">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-3xl font-black">
+              {isResubmit ? 'Resubmit Documents' : 'Identity Verification'}
+            </h1>
+            <p className="text-muted-foreground mt-2 text-sm max-w-sm mx-auto">
+              {isResubmit
+                ? 'Your previous documents were rejected. Please upload clearer images.'
+                : 'Upload your NID and driving license to start booking vehicles.'}
+            </p>
+          </div>
+
+          {isResubmit && currentUser.verificationNote && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+              <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
+              <div>
+                <p className="font-bold text-red-800 text-sm">Admin note:</p>
+                <p className="text-red-700 text-sm">{currentUser.verificationNote}</p>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <OwnerDocumentField
+                step={1}
+                title="NID or Passport"
+                hint="Clear photo or scan of your government ID."
+                url={nidUrl}
+                fileName={nidName}
+                onUploaded={(url, name) => { setNidUrl(url); setNidName(name); }}
+                onClear={() => { setNidUrl(null); setNidName(null); }}
+                onError={setError}
+                onBusy={setUploadBusyTracked}
+                disabled={submitting}
+              />
+              <OwnerDocumentField
+                step={2}
+                title="Driving License"
+                hint="Valid license for the vehicle class you want to rent."
+                url={licenseUrl}
+                fileName={licenseName}
+                onUploaded={(url, name) => { setLicenseUrl(url); setLicenseName(name); }}
+                onClear={() => { setLicenseUrl(null); setLicenseName(null); }}
+                onError={setError}
+                onBusy={setUploadBusyTracked}
+                disabled={submitting}
+              />
+            </div>
+
+            {allReady && (
+              <p className="flex items-center gap-1.5 text-xs font-bold text-green-700">
+                <FileCheck2 size={14} /> Both documents ready
+              </p>
+            )}
+
+            {error && (
+              <p className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-xl">{error}</p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-13 rounded-xl font-black text-base shadow-lg shadow-primary/20"
+              disabled={submitting || uploadBusy || !allReady}
+            >
+              {submitting ? 'Submitting…' : uploadBusy ? 'Uploading…' : 'Submit for Verification'}
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
 }

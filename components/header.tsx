@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp } from '@/lib/context';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,26 +13,35 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Bike, Menu, X, User as UserIcon, MessageSquare, LayoutDashboard, LogOut,
-  MapPin, Calendar, Car, Shield, Bell, ChevronDown, Settings, BookOpen,
-  PlusCircle, BarChart2, Home
+  Bike, Menu, X, MessageSquare, LayoutDashboard, LogOut,
+  MapPin, Calendar, Car, ChevronDown,
+  PlusCircle, Home, ClipboardCheck, Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import type { UserRole } from '@/lib/types';
 
-export function Header() {
+type HeaderProps = {
+  /** When set (e.g. on a role-protected layout), nav matches this role even before client session hydrates */
+  forcedRole?: UserRole;
+};
+
+export function Header({ forcedRole }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { currentUser, logout, messages } = useApp();
+  const { authReady, currentUser, logout, messages } = useApp();
+  const effectiveRole: UserRole | undefined = forcedRole ?? currentUser?.role;
+  const showGuestChrome = authReady && !currentUser && !forcedRole;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
 
   const getDashboardLink = () => {
-    if (currentUser?.role === 'admin') return '/admin';
-    if (currentUser?.role === 'owner') return '/owner-dashboard';
+    const r = effectiveRole;
+    if (r === 'admin') return '/admin';
+    if (r === 'owner') return '/owner-dashboard';
     return '/renter-dashboard';
   };
 
@@ -56,14 +66,15 @@ export function Header() {
   ];
 
   const adminNavLinks = [
-    { href: '/admin', label: 'Console', icon: Shield },
-    { href: '/admin', label: 'Analytics', icon: BarChart2 },
+    { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+    { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
+    { href: '/admin/owners', label: 'Owners', icon: Users },
   ];
 
   const getNavLinks = () => {
-    if (!currentUser) return [];
-    if (currentUser.role === 'owner') return ownerNavLinks;
-    if (currentUser.role === 'admin') return adminNavLinks;
+    if (!effectiveRole) return [];
+    if (effectiveRole === 'owner') return ownerNavLinks;
+    if (effectiveRole === 'admin') return adminNavLinks;
     return renterNavLinks;
   };
 
@@ -86,7 +97,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        {currentUser && (
+        {effectiveRole && (
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {navLinks.map((link) => (
               <Link
@@ -106,7 +117,7 @@ export function Header() {
           </nav>
         )}
 
-        {!currentUser && (
+        {showGuestChrome && (
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             <Link href="/" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
               <MapPin size={15} /> Explore
@@ -115,6 +126,9 @@ export function Header() {
               <Car size={15} /> Browse
             </Link>
           </nav>
+        )}
+        {!effectiveRole && !authReady && (
+          <div className="hidden md:flex flex-1 justify-center" aria-hidden />
         )}
 
         {/* Auth Section */}
@@ -160,7 +174,7 @@ export function Header() {
                       {unreadCount > 0 && <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black">{unreadCount}</span>}
                     </Link>
                   </DropdownMenuItem>
-                  {currentUser.role === 'owner' && (
+                  {effectiveRole === 'owner' && (
                     <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer">
                       <Link href="/owner-dashboard/add-vehicle" className="flex items-center gap-2.5 font-bold">
                         <PlusCircle size={16} className="text-muted-foreground" /> List Vehicle
@@ -174,7 +188,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          ) : (
+          ) : showGuestChrome ? (
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -189,6 +203,11 @@ export function Header() {
               >
                 Join Free
               </Button>
+            </div>
+          ) : (
+            <div className="flex h-9 min-w-[7rem] items-center justify-end gap-2 text-muted-foreground">
+              <Spinner className="size-5" />
+              <span className="sr-only">Loading session</span>
             </div>
           )}
 
@@ -205,17 +224,22 @@ export function Header() {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <nav className="md:hidden bg-white border-t border-border px-4 py-6 space-y-2 animate-in slide-in-from-top duration-200">
-          {currentUser ? (
+          {effectiveRole ? (
             <>
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl mb-4">
-                <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-black">
-                  {currentUser.name.charAt(0)}
+              {currentUser && (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl mb-4">
+                  <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-black">
+                    {currentUser.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-black text-sm">{currentUser.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{currentUser.role}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-black text-sm">{currentUser.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{currentUser.role}</p>
-                </div>
-              </div>
+              )}
+              {!currentUser && authReady && (
+                <p className="text-sm text-muted-foreground px-1 mb-2">Loading account…</p>
+              )}
               {navLinks.map((link) => (
                 <Link
                   key={link.href + link.label}
@@ -227,16 +251,19 @@ export function Header() {
                   <link.icon size={18} /> {link.label}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-border">
-                <button
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-500 hover:bg-red-50 w-full"
-                >
-                  <LogOut size={18} /> Sign Out
-                </button>
-              </div>
+              {currentUser && (
+                <div className="pt-4 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-500 hover:bg-red-50 w-full"
+                  >
+                    <LogOut size={18} /> Sign Out
+                  </button>
+                </div>
+              )}
             </>
-          ) : (
+          ) : showGuestChrome ? (
             <>
               <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 <MapPin size={18} /> Explore
@@ -249,6 +276,11 @@ export function Header() {
                 <Button className="h-12 rounded-xl font-black shadow-xl" onClick={() => { router.push('/signup'); setMobileMenuOpen(false); }}>Join Free</Button>
               </div>
             </>
+          ) : (
+            <div className="flex items-center justify-center gap-2 py-8 text-sm font-medium text-muted-foreground">
+              <Spinner className="size-5" />
+              Loading session…
+            </div>
           )}
         </nav>
       )}

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       email: body.email!,
       phone: body.phone!,
       passwordHash,
-      role: "RENTER",
+      role: "OWNER",
       nidOrPassportUrl: body.nidOrPassportUrl!,
       drivingLicenseUrl: body.drivingLicenseUrl!,
       ownershipPaperUrl: body.ownershipPaperUrl!,

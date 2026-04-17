@@ -9,7 +9,7 @@ datasource db {
 
 enum UserRole {
   GENERAL
-  RENTER
+  OWNER
   ADMIN
 }
 
@@ -23,6 +23,19 @@ enum VehicleStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum VehicleCategory {
+  BIKE
+  CAR
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
 }
 
 model User {
@@ -43,23 +56,58 @@ model User {
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   vehicles             Vehicle[]
+  bookingsAsRenter     Booking[]          @relation("RenterBookings")
 }
 
 model Vehicle {
-  id                 String        @id @default(cuid())
+  id                 String          @id @default(cuid())
   ownerId            String
-  owner              User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner              User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category           VehicleCategory @default(BIKE)
   brand              String
   model              String
   year               Int
   registrationNumber String
+  location           String          @default("Dhaka, Bangladesh")
+  seats              Int             @default(2)
+  fuelType           String          @default("gasoline")
+  transmission       String          @default("manual")
+  description        String?         @db.Text
+  features           String[]        @default([])
   dailyRate          Int
+  priceHourly        Int?
+  priceWeekly        Int?
   vehiclePhotoUrl    String
   ownershipPaperUrl  String
   insurancePaperUrl  String?
-  status             VehicleStatus @default(PENDING)
+  status             VehicleStatus   @default(PENDING)
   reviewNote         String?
   reviewedAt         DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  viewCount          Int             @default(0)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  bookings           Booking[]
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  vehicleId       String
+  vehicle         Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  renterId        String
+  renter          User          @relation("RenterBookings", fields: [renterId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  pickupTime      String?
+  totalPrice      Int
+  status          BookingStatus @default(PENDING)
+  pickupLocation  String
+  dropoffLocation String?
+  notes           String?
+  ownerDecidedAt  DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([vehicleId])
+  @@index([renterId])
+  @@index([status])
 }

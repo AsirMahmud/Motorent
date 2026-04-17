@@ -5,11 +5,20 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DocumentUploadButton } from '@/components/uploadthing-button';
+import { OwnerDocumentField } from '@/components/owner-document-field';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { User as UserIcon, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { User as UserIcon, CheckCircle2, ShieldCheck, FileCheck2 } from 'lucide-react';
+
+type DocKey = 'nid' | 'license' | 'ownership' | 'photo';
+
+const initialDocs: Record<DocKey, { url: string | null; name: string | null }> = {
+  nid: { url: null, name: null },
+  license: { url: null, name: null },
+  ownership: { url: null, name: null },
+  photo: { url: null, name: null },
+};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -17,22 +26,43 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [nidOrPassportUrl, setNidOrPassportUrl] = useState<string | null>(null);
-  const [drivingLicenseUrl, setDrivingLicenseUrl] = useState<string | null>(null);
-  const [ownershipPaperUrl, setOwnershipPaperUrl] = useState<string | null>(null);
-  const [passportPhotoUrl, setPassportPhotoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [docs, setDocs] = useState(initialDocs);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const uploadCountRef = useRef(0);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+
+  const setUploadBusyTracked = (busy: boolean) => {
+    if (busy) uploadCountRef.current += 1;
+    else uploadCountRef.current = Math.max(0, uploadCountRef.current - 1);
+    setUploadBusy(uploadCountRef.current > 0);
+  };
+
+  const setDoc = (key: DocKey, url: string, fileName: string) => {
+    setDocs((prev) => ({ ...prev, [key]: { url, name: fileName } }));
+  };
+
+  const clearDoc = (key: DocKey) => {
+    setDocs((prev) => ({ ...prev, [key]: { url: null, name: null } }));
+  };
+
+  const allDocsReady =
+    docs.nid.url && docs.license.url && docs.ownership.url && docs.photo.url;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!nidOrPassportUrl || !drivingLicenseUrl || !ownershipPaperUrl || !passportPhotoUrl) {
-      setError('Please upload all required documents.');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
-    setLoading(true);
+    if (!allDocsReady) {
+      setError('Please upload all four required documents.');
+      return;
+    }
+    setSubmitting(true);
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -42,10 +72,10 @@ export default function SignupPage() {
           email,
           phone,
           password,
-          nidOrPassportUrl,
-          drivingLicenseUrl,
-          ownershipPaperUrl,
-          passportPhotoUrl,
+          nidOrPassportUrl: docs.nid.url,
+          drivingLicenseUrl: docs.license.url,
+          ownershipPaperUrl: docs.ownership.url,
+          passportPhotoUrl: docs.photo.url,
         }),
       });
       const data = await response.json();
@@ -57,7 +87,7 @@ export default function SignupPage() {
     } catch {
       setError('Unable to submit. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -94,77 +124,166 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex flex-col font-sans">
       <Header />
       <div className="flex-1 flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md">
-          <Card className="p-8 rounded-3xl shadow-2xl border-none">
-            <form className="space-y-5" onSubmit={handleSignup}>
-                <div>
-                  <h1 className="text-3xl font-black mb-1">Renter Verification Signup</h1>
-                  <p className="text-muted-foreground">Submit your information and documents for admin review.</p>
-                </div>
+        <div className="w-full max-w-xl">
+          <Card className="p-6 sm:p-8 rounded-3xl shadow-2xl border-none">
+            <form className="space-y-8" onSubmit={handleSignup}>
+              <div>
+                <h1 className="text-3xl font-black mb-1">Owner verification</h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Enter your details, then add four documents. JPG, PNG, or PDF — max 8MB (images) or 16MB (PDF).
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">Your details</h2>
                 <div className="space-y-2">
-                  <Label>Full Name (As Per NID)</Label>
+                  <Label htmlFor="fullName">Full name (as on NID)</Label>
                   <div className="relative">
-                    <UserIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                    <Input type="text" placeholder="Your full legal name" value={name} onChange={e => setName(e.target.value)} required className="pl-10 h-12 rounded-xl text-base" />
+                    <UserIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Your full legal name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="pl-10 h-12 rounded-xl text-base"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="h-12 rounded-xl text-base" />
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-12 rounded-xl text-base"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Phone</Label>
-                  <Input type="tel" placeholder="+880 1XXX-XXXXXX" value={phone} onChange={e => setPhone(e.target.value)} required className="h-12 rounded-xl text-base" />
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+880 1XXX-XXXXXX"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    className="h-12 rounded-xl text-base"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Password</Label>
-                  <Input type="password" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} required className="h-12 rounded-xl text-base" />
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                    className="h-12 rounded-xl text-base"
+                  />
                 </div>
-                <div className="space-y-3">
-                  {[
-                    { label: 'NID or Passport *', setter: setNidOrPassportUrl, value: nidOrPassportUrl },
-                    { label: 'Driving License *', setter: setDrivingLicenseUrl, value: drivingLicenseUrl },
-                    { label: 'Car Ownership Paper *', setter: setOwnershipPaperUrl, value: ownershipPaperUrl },
-                    { label: 'Passport Size Photo *', setter: setPassportPhotoUrl, value: passportPhotoUrl },
-                  ].map((item) => (
-                    <div key={item.label} className="space-y-1">
-                      <Label>{item.label}</Label>
-                      <div
-                        className={`w-full h-16 rounded-xl border-2 border-dashed flex items-center justify-center px-4 py-2 ${
-                          item.value ? 'border-green-500 bg-green-50' : 'border-border hover:border-primary'
-                        }`}
-                      >
-                        <DocumentUploadButton
-                          endpoint="document"
-                          content={{
-                            button: item.value ? 'Replace file' : 'Upload file (image or PDF)',
-                          }}
-                          onUploadBegin={() => {
-                            setError('');
-                            setLoading(true);
-                          }}
-                          onClientUploadComplete={(res) => {
-                            setLoading(false);
-                            const url = res[0]?.url;
-                            if (url) item.setter(url);
-                          }}
-                          onUploadError={(err) => {
-                            setLoading(false);
-                            setError(err.message || 'Upload failed');
-                          }}
-                          className="ut-button:bg-primary ut-button:text-primary-foreground ut-button:ut-ready:bg-primary ut-button:text-sm ut-button:font-bold"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                    className="h-12 rounded-xl text-base"
+                  />
                 </div>
-                {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-                <Button type="submit" className="w-full h-12 rounded-xl font-black text-base shadow-lg shadow-primary/20" disabled={loading}>
-                  {loading ? 'Submitting...' : 'Submit Verification Request'}
-                </Button>
-                <p className="text-center text-sm text-muted-foreground">
-                  Already have an account? <Link href="/login" className="text-primary font-bold">Sign in</Link>
-                </p>
+              </div>
+
+              <div className="space-y-4 border-t border-border pt-8">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">Verification documents</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">All four are required. You’ll see the file name after each upload.</p>
+                  </div>
+                  {allDocsReady ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800">
+                      <FileCheck2 className="h-3.5 w-3.5" />
+                      All set
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <OwnerDocumentField
+                    step={1}
+                    title="NID or passport"
+                    hint="Government ID (scan or clear photo)."
+                    url={docs.nid.url}
+                    fileName={docs.nid.name}
+                    onUploaded={(url, fileName) => setDoc('nid', url, fileName)}
+                    onClear={() => clearDoc('nid')}
+                    onError={setError}
+                    onBusy={setUploadBusyTracked}
+                    disabled={submitting}
+                  />
+                  <OwnerDocumentField
+                    step={2}
+                    title="Driving license"
+                    hint="Valid license for the vehicle class you’ll rent."
+                    url={docs.license.url}
+                    fileName={docs.license.name}
+                    onUploaded={(url, fileName) => setDoc('license', url, fileName)}
+                    onClear={() => clearDoc('license')}
+                    onError={setError}
+                    onBusy={setUploadBusyTracked}
+                    disabled={submitting}
+                  />
+                  <OwnerDocumentField
+                    step={3}
+                    title="Car ownership paper"
+                    hint="Proof you own the vehicle(s) you list."
+                    url={docs.ownership.url}
+                    fileName={docs.ownership.name}
+                    onUploaded={(url, fileName) => setDoc('ownership', url, fileName)}
+                    onClear={() => clearDoc('ownership')}
+                    onError={setError}
+                    onBusy={setUploadBusyTracked}
+                    disabled={submitting}
+                  />
+                  <OwnerDocumentField
+                    step={4}
+                    title="Passport-size photo"
+                    hint="Recent photo, plain background."
+                    url={docs.photo.url}
+                    fileName={docs.photo.name}
+                    onUploaded={(url, fileName) => setDoc('photo', url, fileName)}
+                    onClear={() => clearDoc('photo')}
+                    onError={setError}
+                    onBusy={setUploadBusyTracked}
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
+
+              {error ? <p className="text-red-600 text-sm font-medium">{error}</p> : null}
+
+              <Button
+                type="submit"
+                className="w-full h-12 rounded-xl font-black text-base shadow-lg shadow-primary/20"
+                disabled={submitting || uploadBusy}
+              >
+                {submitting ? 'Submitting…' : uploadBusy ? 'Uploading…' : 'Submit verification request'}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/login" className="text-primary font-bold">
+                  Sign in
+                </Link>
+              </p>
             </form>
           </Card>
         </div>

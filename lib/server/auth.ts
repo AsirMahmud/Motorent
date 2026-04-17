@@ -1,13 +1,14 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import { UserRole } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/server/next-auth";
 import { db } from "@/lib/server/db";
 
 const SESSION_COOKIE = "moto_rent_session";
 
 type SessionPayload = {
   userId: string;
-  role: UserRole;
+  role: "GENERAL" | "OWNER" | "ADMIN";
 };
 
 function getJwtSecret() {
@@ -42,7 +43,8 @@ export async function clearSessionCookie() {
   cookieStore.delete(SESSION_COOKIE);
 }
 
-export async function requireAuth() {
+/** Session from httpOnly JWT cookie (owner/admin email login). */
+export async function requireAuthFromJwtCookie() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) {
@@ -60,10 +62,35 @@ export async function requireAuth() {
   }
 }
 
+/**
+ * Authenticated user from JWT cookie or NextAuth (Google / GENERAL renters).
+ */
+export async function getAuthUser() {
+  const fromCookie = await requireAuthFromJwtCookie();
+  if (fromCookie) {
+    return fromCookie;
+  }
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  return db.user.findUnique({
+    where: { email: session.user.email },
+  });
+}
+
+/** @alias getAuthUser — use for API routes and layouts that accept either auth mode */
+export async function requireAuth() {
+  return getAuthUser();
+}
+
 export async function requireAdmin() {
-  const user = await requireAuth();
+  const user = await getAuthUser();
   if (!user || user.role !== "ADMIN") {
     return null;
   }
   return user;
 }
+

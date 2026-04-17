@@ -4,19 +4,14 @@ import { requireAdmin } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { sendMail } from "@/lib/server/mail";
 
-type StatusBody = {
-  status?: VerificationStatus;
-  note?: string;
-};
+type StatusBody = { status?: VerificationStatus; note?: string };
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdmin();
-  if (!admin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
   const body = (await request.json()) as StatusBody;
@@ -25,38 +20,42 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const user = await db.user.update({
+  const existing = await db.user.findFirst({
+    where: { id, role: "GENERAL" },
+    select: { id: true },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Renter not found" }, { status: 404 });
+  }
+
+  const renter = await db.user.update({
     where: { id },
     data: {
       verificationStatus: body.status,
-      verificationNote: body.note,
+      verificationNote: body.note ?? null,
       verificationReviewedAt: new Date(),
     },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      verificationStatus: true,
-    },
+    select: { id: true, fullName: true, email: true, verificationStatus: true },
   });
 
   let emailSent = false;
-  if (user.verificationStatus !== "PENDING") {
-    const subject =
-      user.verificationStatus === "APPROVED"
-        ? "Your MotoRent renter verification was approved"
-        : "Update on your MotoRent renter verification";
-    const text =
-      user.verificationStatus === "APPROVED"
-        ? `Hi ${user.fullName},\n\nYour renter account has been approved. You can sign in and list vehicles.\n\n— MotoRent`
-        : `Hi ${user.fullName},\n\nYour renter verification was not approved.${body.note ? `\n\nNote from admin: ${body.note}` : ""}\n\n— MotoRent`;
-    const result = await sendMail({ to: user.email, subject, text });
+  if (renter.verificationStatus !== "PENDING") {
+    const approved = renter.verificationStatus === "APPROVED";
+    const result = await sendMail({
+      to: renter.email,
+      subject: approved
+        ? "Your MotoRent KYC was approved — you can now book vehicles!"
+        : "Update on your MotoRent KYC verification",
+      text: approved
+        ? `Hi ${renter.fullName},\n\nCongratulations! Your identity documents have been verified and approved.\n\nYou can now log in to MotoRent and start booking vehicles.\n\n— MotoRent Team`
+        : `Hi ${renter.fullName},\n\nWe were unable to approve your identity verification.${body.note ? `\n\nReason: ${body.note}` : ""}\n\nPlease resubmit clear photos of your NID and driving license by visiting your dashboard.\n\n— MotoRent Team`,
+    });
     emailSent = result.sent;
   }
 
   return NextResponse.json({
-    message: `Renter status updated to ${user.verificationStatus}`,
-    user,
+    message: `Renter status updated to ${renter.verificationStatus}`,
+    renter,
     emailSent,
   });
 }

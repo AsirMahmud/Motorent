@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Booking } from '@/lib/types';
 import { Calendar, Clock, MapPin, Info } from 'lucide-react';
+import type { Booking } from '@/lib/types';
 
 interface BookingFormProps {
   vehicleId: string;
@@ -19,6 +19,8 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
   const router = useRouter();
   const { currentUser, vehicles, addBooking } = useApp();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [apiDailyRate, setApiDailyRate] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
@@ -27,51 +29,114 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
     notes: '',
   });
 
-  const vehicle = vehicles.find((v) => v.id === vehicleId);
+  const mockVehicle = vehicles.find((v) => v.id === vehicleId);
+
+  const loadPublicVehicle = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/vehicles/${vehicleId}`, { credentials: 'same-origin' });
+      if (res.ok) {
+        const data = (await res.json()) as { vehicle: { dailyRate: number } };
+        setApiDailyRate(data.vehicle.dailyRate);
+      } else {
+        setApiDailyRate(null);
+      }
+    } catch {
+      setApiDailyRate(null);
+    }
+  }, [vehicleId]);
+
+  useEffect(() => {
+    loadPublicVehicle();
+  }, [loadPublicVehicle]);
+
+  const pricePerDay =
+    apiDailyRate != null ? apiDailyRate : mockVehicle != null ? mockVehicle.priceDaily : 0;
 
   const calculateTotal = () => {
-    if (!formData.startDate || !formData.endDate || !vehicle) return 0;
+    if (!formData.startDate || !formData.endDate || !pricePerDay) return 0;
     const start = new Date(formData.startDate);
     const end = new Date(formData.endDate);
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays * vehicle.priceDaily : 0;
+    const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays * pricePerDay : 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !vehicle) return;
+    if (!currentUser || !pricePerDay) return;
 
     setLoading(true);
+    setError('');
 
-    const newBooking: Booking = {
-      id: `booking-${Date.now()}`,
-      vehicleId,
-      renterId: currentUser.id,
-      startDate: new Date(formData.startDate),
-      endDate: new Date(formData.endDate),
-      pickupTime: formData.pickupTime,
-      totalPrice: calculateTotal(),
-      status: 'pending',
-      pickupLocation: formData.pickupLocation || vehicle.location,
-      createdAt: new Date(),
-    };
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          vehicleId,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          pickupTime: formData.pickupTime,
+          pickupLocation: formData.pickupLocation || undefined,
+          notes: formData.notes || undefined,
+        }),
+      });
 
-    addBooking(newBooking);
+      const data = await res.json();
 
-    // Simulate network delay
-    setTimeout(() => {
-      router.push(`/booking-confirmation/${newBooking.id}`);
+      if (res.ok && data.booking?.id) {
+        router.push(`/booking-confirmation/${data.booking.id}`);
+        return;
+      }
+
+      if (res.status === 401) {
+        setError('Please sign in to book.');
+        return;
+      }
+
+      if (mockVehicle && res.status === 404) {
+        const newBooking: Booking = {
+          id: `booking-${Date.now()}`,
+          vehicleId,
+          renterId: currentUser.id,
+          startDate: new Date(formData.startDate),
+          endDate: new Date(formData.endDate),
+          pickupTime: formData.pickupTime,
+          totalPrice: calculateTotal(),
+          status: 'pending',
+          pickupLocation: formData.pickupLocation || mockVehicle.location,
+          notes: formData.notes,
+          createdAt: new Date(),
+        };
+        addBooking(newBooking);
+        router.push(`/booking-confirmation/${newBooking.id}`);
+        return;
+      }
+
+      setError(data.error || 'Could not submit booking');
+    } catch {
+      setError('Network error. Try again.');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
-  const days = formData.startDate && formData.endDate
-    ? Math.ceil((new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const days =
+    formData.startDate && formData.endDate
+      ? Math.ceil(
+          (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in zoom-in duration-300">
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">
+          {error}
+        </p>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="startDate" className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1">
@@ -120,22 +185,37 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="pickupLocation" className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1">
-          <MapPin size={12} /> Specific Pickup Point (Optional)
+          <MapPin size={12} /> Pickup point (optional)
         </Label>
         <Input
           id="pickupLocation"
           type="text"
-          placeholder={`Near ${vehicle?.location}`}
+          placeholder={mockVehicle?.location ? `Near ${mockVehicle.location}` : 'Address or landmark'}
           value={formData.pickupLocation}
           onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
           className="h-12 rounded-xl border-2 focus:border-primary"
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="notes" className="text-xs font-bold uppercase text-muted-foreground">
+          Notes (optional)
+        </Label>
+        <Textarea
+          id="notes"
+          rows={2}
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          className="rounded-xl border-2"
+        />
+      </div>
+
       {days > 0 && (
         <div className="p-4 bg-primary/5 rounded-2xl border-2 border-primary/10 space-y-3">
           <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground font-medium">৳{vehicle?.priceDaily} × {days} days</span>
+            <span className="text-muted-foreground font-medium">
+              ৳{pricePerDay} × {days} days
+            </span>
             <span className="font-bold">৳{calculateTotal()}</span>
           </div>
           <div className="flex justify-between items-center text-sm">
@@ -151,14 +231,14 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
 
       <div className="flex items-start gap-2 text-[10px] text-muted-foreground font-bold uppercase p-2 bg-muted/30 rounded-lg">
         <Info size={12} className="shrink-0" />
-        <p>The owner will review your request and confirm availability within 2 hours.</p>
+        <p>The owner will review your request and confirm availability.</p>
       </div>
 
       <div className="space-y-3 pt-2">
         <Button
           type="submit"
           className="w-full h-14 text-lg font-black uppercase rounded-2xl shadow-xl shadow-primary/20"
-          disabled={loading || days <= 0}
+          disabled={loading || days <= 0 || !pricePerDay}
         >
           {loading ? 'Sending Request...' : 'Send Booking Request'}
         </Button>

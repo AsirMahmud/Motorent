@@ -1,17 +1,37 @@
 import { NextResponse } from "next/server";
+import { VehicleCategory } from "@prisma/client";
 import { requireAuth } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 
 type VehicleBody = {
+  category?: VehicleCategory;
   brand?: string;
   model?: string;
   year?: number;
   registrationNumber?: string;
+  location?: string;
+  seats?: number;
+  fuelType?: string;
+  transmission?: string;
+  description?: string;
+  features?: string[];
   dailyRate?: number;
+  priceHourly?: number | null;
+  priceWeekly?: number | null;
   vehiclePhotoUrl?: string;
   ownershipPaperUrl?: string;
   insurancePaperUrl?: string;
 };
+
+const FUEL = new Set(["gasoline", "diesel", "electric", "hybrid"]);
+const TRANS = new Set(["manual", "automatic"]);
+
+function optionalPositiveInt(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.floor(n);
+}
 
 export async function POST(request: Request) {
   const user = await requireAuth();
@@ -19,32 +39,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (user.role !== "RENTER") {
+  if (user.role !== "OWNER") {
     return NextResponse.json(
-      { error: "Only renters can submit vehicles in this flow" },
+      { error: "Only owners can submit vehicles in this flow" },
       { status: 403 }
     );
   }
 
   if (user.verificationStatus !== "APPROVED") {
     return NextResponse.json(
-      { error: "Your renter account must be approved first" },
+      { error: "Your owner account must be approved first" },
       { status: 403 }
     );
   }
 
   const body = (await request.json()) as VehicleBody;
-  const requiredFields = [
-    "brand",
-    "model",
-    "year",
-    "registrationNumber",
-    "dailyRate",
-    "vehiclePhotoUrl",
-    "ownershipPaperUrl",
-  ] as const;
-
-  const missing = requiredFields.filter((field) => !body[field]);
+  const missing: string[] = [];
+  if (!body.brand?.trim()) missing.push("brand");
+  if (!body.model?.trim()) missing.push("model");
+  if (body.year === undefined || body.year === null) missing.push("year");
+  if (!body.registrationNumber?.trim()) missing.push("registrationNumber");
+  if (!body.location?.trim()) missing.push("location");
+  if (body.dailyRate === undefined || body.dailyRate === null) missing.push("dailyRate");
+  if (!body.vehiclePhotoUrl?.trim()) missing.push("vehiclePhotoUrl");
+  if (!body.ownershipPaperUrl?.trim()) missing.push("ownershipPaperUrl");
   if (missing.length > 0) {
     return NextResponse.json(
       { error: `Missing fields: ${missing.join(", ")}` },
@@ -52,14 +70,64 @@ export async function POST(request: Request) {
     );
   }
 
+  const daily = Number(body.dailyRate);
+  if (!Number.isFinite(daily) || daily <= 0) {
+    return NextResponse.json(
+      { error: "dailyRate must be a positive number" },
+      { status: 400 }
+    );
+  }
+  const yr = Number(body.year);
+  if (!Number.isFinite(yr) || yr < 1990 || yr > 2035) {
+    return NextResponse.json({ error: "Invalid year" }, { status: 400 });
+  }
+
+  const catRaw = String(body.category ?? "BIKE").toUpperCase();
+  const category =
+    catRaw === "CAR" ? VehicleCategory.CAR : VehicleCategory.BIKE;
+  const seats = body.seats === undefined || body.seats === null ? NaN : Number(body.seats);
+  if (!Number.isFinite(seats) || seats < 1 || seats > 50) {
+    return NextResponse.json(
+      { error: "Seats must be a number between 1 and 50" },
+      { status: 400 }
+    );
+  }
+  const fuel = (body.fuelType || "gasoline").toLowerCase();
+  const trans = (body.transmission || "manual").toLowerCase();
+  if (!FUEL.has(fuel)) {
+    return NextResponse.json(
+      { error: "Invalid fuelType (use gasoline, diesel, electric, or hybrid)" },
+      { status: 400 }
+    );
+  }
+  if (!TRANS.has(trans)) {
+    return NextResponse.json(
+      { error: "Invalid transmission (use manual or automatic)" },
+      { status: 400 }
+    );
+  }
+
+  const features = Array.isArray(body.features)
+    ? body.features.map((s) => String(s).trim()).filter(Boolean)
+    : [];
+
   const vehicle = await db.vehicle.create({
     data: {
       ownerId: user.id,
-      brand: body.brand!,
-      model: body.model!,
-      year: Number(body.year),
-      registrationNumber: body.registrationNumber!,
-      dailyRate: Number(body.dailyRate),
+      category,
+      brand: body.brand!.trim(),
+      model: body.model!.trim(),
+      year: yr,
+      registrationNumber: body.registrationNumber!.trim(),
+      location: body.location!.trim(),
+      seats,
+      fuelType: fuel,
+      transmission: trans,
+      description: body.description?.trim() || null,
+      features,
+      dailyRate: daily,
+      priceHourly: optionalPositiveInt(body.priceHourly),
+      priceWeekly: optionalPositiveInt(body.priceWeekly),
       vehiclePhotoUrl: body.vehiclePhotoUrl!,
       ownershipPaperUrl: body.ownershipPaperUrl!,
       insurancePaperUrl: body.insurancePaperUrl,

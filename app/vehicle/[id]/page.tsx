@@ -8,12 +8,14 @@ import { useApp } from '@/lib/context';
 import { useRouter, useParams } from 'next/navigation';
 import { BookingForm } from '@/components/booking-form';
 import {
-  Star, MapPin, Fuel, Users, Zap, Calendar,
-  DollarSign, ShieldCheck, Check, Info, ArrowLeft,
-  Clock, CalendarDays, CalendarRange, Layers
+  Star, MapPin, Fuel, Users, Zap,
+  ShieldCheck, Check, Info, ArrowLeft,
+  Clock, CalendarDays, CalendarRange, Layers, LayoutDashboard,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import type { Vehicle } from '@/lib/types';
+import { mapPublicVehicleApiToVehicle, type PublicVehicleApi } from '@/lib/map-public-vehicle';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -21,8 +23,88 @@ export default function VehicleDetailPage() {
   const { vehicles, currentUser } = useApp();
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [resolved, setResolved] = useState<Vehicle | null>(null);
+  const [ownerDisplayName, setOwnerDisplayName] = useState('Owner');
+  const [ownerReviewNote, setOwnerReviewNote] = useState<string | null>(null);
+  const [loadingRemote, setLoadingRemote] = useState(true);
 
-  const vehicle = vehicles.find((v) => v.id === params.id);
+  const id = useMemo(() => {
+    const raw = params?.id;
+    return typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] ?? '' : '';
+  }, [params]);
+
+  const vehiclesRef = useRef(vehicles);
+  vehiclesRef.current = vehicles;
+
+  const ctxVehicle = useMemo(
+    () => (id ? vehicles.find((v) => v.id === id) : undefined),
+    [vehicles, id]
+  );
+
+  useEffect(() => {
+    if (!id) {
+      setLoadingRemote(false);
+      return;
+    }
+    let cancelled = false;
+    setResolved(null);
+    setLoadingRemote(true);
+    (async () => {
+      try {
+        const res = await fetch(`/api/vehicles/${id}`, { credentials: 'same-origin' });
+        const ctx = vehiclesRef.current.find((v) => v.id === id);
+        if (res.ok) {
+          const data = (await res.json()) as {
+            vehicle: PublicVehicleApi & { reviewNote?: string | null };
+          };
+          if (!cancelled) {
+            setResolved(mapPublicVehicleApiToVehicle(data.vehicle));
+            setOwnerDisplayName(data.vehicle.owner?.fullName?.trim() || 'Owner');
+            setOwnerReviewNote(data.vehicle.reviewNote ?? null);
+          }
+        } else if (!cancelled) {
+          setResolved(ctx ?? null);
+          setOwnerDisplayName('Owner User');
+          setOwnerReviewNote(null);
+        }
+      } catch {
+        if (!cancelled) {
+          const ctx = vehiclesRef.current.find((v) => v.id === id);
+          setResolved(ctx ?? null);
+          setOwnerDisplayName('Owner User');
+          setOwnerReviewNote(null);
+        }
+      } finally {
+        if (!cancelled) setLoadingRemote(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const vehicle = resolved ?? ctxVehicle;
+
+  const isOwnListing = Boolean(
+    currentUser?.role === 'owner' && vehicle && currentUser.id === vehicle.ownerId
+  );
+
+  useEffect(() => {
+    if (isOwnListing) {
+      setShowBookingForm(false);
+    }
+  }, [isOwnListing]);
+
+  if (loadingRemote && !ctxVehicle) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col font-sans">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground font-medium">Loading listing…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!vehicle) {
     return (
@@ -59,6 +141,35 @@ export default function VehicleDetailPage() {
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
+
+          {isOwnListing && (
+            <div
+              className={`mb-6 rounded-2xl border p-4 ${
+                vehicle.status === 'rejected'
+                  ? 'border-red-200 bg-red-50/90'
+                  : vehicle.status === 'pending'
+                    ? 'border-amber-200 bg-amber-50/90'
+                    : 'border-emerald-200 bg-emerald-50/90'
+              }`}
+            >
+              <p className="font-black text-sm uppercase tracking-wide">
+                {vehicle.status === 'approved'
+                  ? 'Your live listing'
+                  : vehicle.status === 'pending'
+                    ? 'Listing under admin review'
+                    : 'Listing not published'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {vehicle.status === 'pending' &&
+                  'Renters do not see this page until an admin approves your vehicle.'}
+                {vehicle.status === 'rejected' &&
+                  (ownerReviewNote?.trim()
+                    ? `Note from admin: ${ownerReviewNote}`
+                    : 'This listing was rejected. You can submit updates from your dashboard.')}
+                {vehicle.status === 'approved' && 'This preview matches what renters see for an approved listing.'}
+              </p>
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
@@ -123,10 +234,14 @@ export default function VehicleDetailPage() {
                   <div className="flex items-center gap-4 bg-muted/50 p-3 rounded-2xl w-fit">
                     <div className="flex items-center gap-1">
                       <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
-                      <span className="text-xl font-black">{vehicle.rating}</span>
+                      <span className="text-xl font-black">
+                        {vehicle.rating > 0 ? vehicle.rating : '—'}
+                      </span>
                     </div>
                     <div className="h-6 w-[1px] bg-border" />
-                    <span className="text-sm text-muted-foreground font-bold">{vehicle.reviewsCount} verified reviews</span>
+                    <span className="text-sm text-muted-foreground font-bold">
+                      {vehicle.reviewsCount > 0 ? `${vehicle.reviewsCount} verified reviews` : 'No reviews yet'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -219,7 +334,20 @@ export default function VehicleDetailPage() {
                     </div>
                   </div>
 
-                  {!showBookingForm ? (
+                  {isOwnListing ? (
+                    <div className="space-y-4 pt-4 border-t">
+                      <p className="text-sm text-center font-medium text-muted-foreground px-1">
+                        You cannot book your own vehicle. Approve or decline renter requests from your dashboard.
+                      </p>
+                      <Button
+                        size="lg"
+                        className="w-full h-14 text-base font-black rounded-2xl shadow-xl shadow-primary/20 gap-2"
+                        onClick={() => router.push('/owner-dashboard')}
+                      >
+                        <LayoutDashboard className="h-5 w-5" /> Owner dashboard
+                      </Button>
+                    </div>
+                  ) : !showBookingForm ? (
                     <div className="space-y-4 pt-4 border-t">
                       <div className="flex items-center justify-between font-bold text-sm text-muted-foreground uppercase px-2">
                         <span>Min. Booking</span>
@@ -247,7 +375,7 @@ export default function VehicleDetailPage() {
                     </div>
                   )}
 
-                  {!showBookingForm && (
+                  {!showBookingForm && !isOwnListing && (
                     <div className="pt-4 flex flex-col gap-3">
                       <div className="p-4 bg-muted/50 rounded-2xl flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary">
@@ -255,7 +383,7 @@ export default function VehicleDetailPage() {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-muted-foreground uppercase">Managed by</p>
-                          <p className="font-black">Owner User</p>
+                          <p className="font-black">{ownerDisplayName}</p>
                         </div>
                       </div>
                       <Button variant="outline" className="w-full h-12 rounded-xl text-primary border-primary hover:bg-primary/5 font-bold">

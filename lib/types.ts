@@ -14,6 +14,7 @@ export type User = {
   nidUrl?: string;
   licenseUrl?: string;
   address?: string;
+  verificationNote?: string;
   createdAt: Date;
 };
 

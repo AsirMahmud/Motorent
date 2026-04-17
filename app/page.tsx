@@ -6,14 +6,30 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useApp } from '@/lib/context';
-import { useState, useMemo } from 'react';
-import { Search, MapPin, Filter, Bike, Car, Star, Navigation, Clock, Shield, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, MapPin, Bike, Car, Star, Navigation, Shield, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const { vehicles, currentUser } = useApp();
+  const { vehicles, currentUser, authReady } = useApp();
   const router = useRouter();
+
+  // Auth guard — redirect to login once auth state is known
+  useEffect(() => {
+    if (authReady && !currentUser) {
+      router.replace('/login');
+    }
+  }, [authReady, currentUser, router]);
+
+  // Show a loading state while we wait for auth check
+  if (!authReady || !currentUser) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
   const [filter, setFilter] = useState<'all' | 'bike' | 'car'>('all');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
