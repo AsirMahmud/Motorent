@@ -57,6 +57,9 @@ model User {
   updatedAt            DateTime           @updatedAt
   vehicles             Vehicle[]
   bookingsAsRenter     Booking[]          @relation("RenterBookings")
+  messagesSent         Message[]          @relation("BookingMessageSender")
+  directMessagesSent   DirectMessage[]    @relation("DirectMessageFrom")
+  directMessagesRecv   DirectMessage[]    @relation("DirectMessageTo")
 }
 
 model Vehicle {
@@ -69,6 +72,9 @@ model Vehicle {
   year               Int
   registrationNumber String
   location           String          @default("Dhaka, Bangladesh")
+  /** Pickup / listing pin for the explore map; optional when geocoding from `location` is enough */
+  latitude           Float?
+  longitude          Float?
   seats              Int             @default(2)
   fuelType           String          @default("gasoline")
   transmission       String          @default("manual")
@@ -104,10 +110,48 @@ model Booking {
   dropoffLocation String?
   notes           String?
   ownerDecidedAt  DateTime?
+  pickedUpAt      DateTime?
+  returnedAt      DateTime?
+  returnCondition String?
+  returnNotes     String?       @db.Text
+  lateFee         Int           @default(0)
+  damageFee       Int           @default(0)
+  finalAmount     Int?
+  paymentReceivedAt DateTime?
+  renterLat       Float?
+  renterLng       Float?
+  renterLocUpdatedAt DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  messages        Message[]
 
   @@index([vehicleId])
   @@index([renterId])
   @@index([status])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation("BookingMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+}
+
+model DirectMessage {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  body      String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  from      User     @relation("DirectMessageFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to        User     @relation("DirectMessageTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@index([fromId, toId])
+  @@index([toId, read])
 }

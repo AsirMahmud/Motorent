@@ -18,6 +18,10 @@ import { useRef, useState } from 'react';
 import { CheckCircle2, DollarSign, ArrowLeft, Bike, Car, MapPin } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { DashboardPageHeader } from '@/components/dashboard-page-header';
+import {
+  VehicleListingMapPicker,
+  type MapPickerCoords,
+} from '@/components/vehicle-listing-map-picker';
 
 type DocKey = 'photo' | 'ownership' | 'insurance';
 
@@ -42,6 +46,7 @@ export function OwnerAddVehicleForm() {
   const [year, setYear] = useState('2024');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [location, setLocation] = useState('');
+  const [mapPin, setMapPin] = useState<MapPickerCoords | null>(null);
   const [seats, setSeats] = useState('2');
   const [fuelType, setFuelType] = useState('gasoline');
   const [transmission, setTransmission] = useState('manual');
@@ -99,6 +104,9 @@ export function OwnerAddVehicleForm() {
           year: Number(year),
           registrationNumber,
           location: location.trim(),
+          ...(mapPin
+            ? { latitude: mapPin.lat, longitude: mapPin.lng }
+            : {}),
           seats: Number(seats),
           fuelType,
           transmission,
@@ -249,6 +257,11 @@ export function OwnerAddVehicleForm() {
                   onChange={(e) => setLocation(e.target.value)}
                   className="h-11 rounded-xl"
                 />
+              </div>
+
+              <div className="space-y-2 rounded-xl border border-border/60 bg-muted/10 p-4">
+                <Label className="text-sm font-semibold">Map position (optional)</Label>
+                <VehicleListingMapPicker value={mapPin} onChange={setMapPin} disabled={submitting || uploadBusy} />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

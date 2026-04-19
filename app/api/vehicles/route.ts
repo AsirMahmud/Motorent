@@ -10,6 +10,9 @@ type VehicleBody = {
   year?: number;
   registrationNumber?: string;
   location?: string;
+  /** Owner-placed map pin (optional; otherwise geocoded from `location`) */
+  latitude?: number | null;
+  longitude?: number | null;
   seats?: number;
   fuelType?: string;
   transmission?: string;
@@ -22,6 +25,18 @@ type VehicleBody = {
   ownershipPaperUrl?: string;
   insurancePaperUrl?: string;
 };
+
+function parseOwnerMapPin(body: VehicleBody): { latitude: number; longitude: number } | null {
+  const { latitude: latRaw, longitude: lngRaw } = body;
+  if (latRaw === undefined || latRaw === null || lngRaw === undefined || lngRaw === null) {
+    return null;
+  }
+  const lat = Number(latRaw);
+  const lng = Number(lngRaw);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { latitude: lat, longitude: lng };
+}
 
 /** Geocode a location string to lat/lng via Nominatim (free, no key needed). */
 async function geocodeLocation(
@@ -130,7 +145,9 @@ export async function POST(request: Request) {
     : [];
 
   const locationStr = body.location!.trim();
-  const coords = await geocodeLocation(locationStr);
+  const ownerPin = parseOwnerMapPin(body);
+  const geocoded = ownerPin ? null : await geocodeLocation(locationStr);
+  const coords = ownerPin ?? geocoded;
 
   const vehicle = await db.vehicle.create({
     data: {
