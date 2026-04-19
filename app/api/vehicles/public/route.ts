@@ -20,6 +20,8 @@ export async function GET(request: Request) {
       year: true,
       registrationNumber: true,
       location: true,
+      latitude: true,
+      longitude: true,
       seats: true,
       fuelType: true,
       transmission: true,
@@ -34,6 +36,12 @@ export async function GET(request: Request) {
       owner: {
         select: { id: true, fullName: true, verificationStatus: true },
       },
+      // Check for any active (accepted, not yet returned) booking
+      bookings: {
+        where: { status: "ACCEPTED", returnedAt: null },
+        select: { id: true },
+        take: 1,
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -47,5 +55,11 @@ export async function GET(request: Request) {
       )
     : vehicles;
 
-  return NextResponse.json({ vehicles: filtered });
+  // Flatten: replace bookings[] with a simple boolean flag
+  const result = filtered.map(({ bookings, ...v }) => ({
+    ...v,
+    isOnRental: bookings.length > 0,
+  }));
+
+  return NextResponse.json({ vehicles: result });
 }

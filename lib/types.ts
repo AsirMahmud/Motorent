@@ -43,6 +43,7 @@ export type Vehicle = {
   location: string;
   coordinates: { lat: number; lng: number };
   isAvailable: boolean;
+  isOnRental: boolean;
   status: VehicleStatus;
   registrationNumber: string;
   description: string;
@@ -64,6 +65,11 @@ export type Booking = {
   pickupLocation: string;
   dropoffLocation?: string;
   notes?: string;
+  pickedUpAt?: Date;
+  returnedAt?: Date;
+  renterLat?: number;
+  renterLng?: number;
+  renterLocUpdatedAt?: Date;
   createdAt: Date;
 };
 

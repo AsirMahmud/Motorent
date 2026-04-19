@@ -3,15 +3,20 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ChatPanel } from '@/components/chat-panel';
 import { useApp } from '@/lib/context';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Calendar, MessageSquare, Star, MapPin, Map as MapIcon, Clock,
+  Calendar, Star, MapPin, Map as MapIcon, Clock,
   ShieldCheck, AlertCircle, TrendingUp, History,
   Heart, Bike, Car, CheckCircle2, XCircle, Activity, DollarSign,
   ChevronRight, Timer, FileText, RefreshCw,
 } from 'lucide-react';
+import { MobileExplorerTabBar } from '@/components/mobile-explorer-tab-bar';
+import { RentalTimeline } from '@/components/rental-timeline';
+import { InboxPanel } from '@/components/inbox-panel';
+import { DashboardPageHeader } from '@/components/dashboard-page-header';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -42,48 +47,88 @@ function useCountdown(endDate: Date) {
 }
 
 function ActiveRentalCard({ booking, vehicle }: {
-  booking: { id: string; endDate: Date; startDate: Date; pickupLocation: string; pickupTime?: string; totalPrice: number; status: string; vehicleId: string };
+  booking: {
+    id: string; endDate: Date; startDate: Date; pickupLocation: string;
+    pickupTime?: string; totalPrice: number; status: string; vehicleId: string;
+    pickedUpAt?: Date; returnedAt?: Date; createdAt: Date;
+  };
   vehicle: { brand: string; model: string; type: string; image: string };
 }) {
   const { remaining, ended } = useCountdown(booking.endDate);
-  const router = useRouter();
+
+  // Auto-broadcast GPS for any active (accepted) booking
+  useEffect(() => {
+    if (booking.returnedAt) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        fetch(`/api/bookings/${booking.id}/location`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          credentials: 'same-origin',
+        }).catch(() => {});
+      },
+      (err) => console.warn('GPS error:', err.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [booking.id, booking.returnedAt]);
 
   return (
-    <Card className="rounded-2xl border-none shadow-sm bg-white overflow-hidden">
-      <div className={`p-4 text-white flex items-center justify-between ${ended ? 'bg-gradient-to-r from-gray-500 to-gray-600' : 'bg-gradient-to-r from-green-500 to-emerald-600'}`}>
+    <Card className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+      {/* Header bar */}
+      <div className={`p-4 text-white flex items-center justify-between ${
+        ended ? 'bg-gradient-to-r from-gray-500 to-gray-600' : 'bg-gradient-to-r from-green-500 to-emerald-600'
+      }`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
             {vehicle.type === 'bike' ? <Bike size={18} /> : <Car size={18} />}
           </div>
           <div>
-            <p className="font-black">{vehicle.brand} {vehicle.model}</p>
+            <p className="font-semibold">{vehicle.brand} {vehicle.model}</p>
             <p className="text-xs opacity-80">{ended ? 'Rental ended' : 'Active Rental'}</p>
           </div>
         </div>
         <div className="text-right">
           <div className="flex items-center gap-1 justify-end">
             <Timer size={13} className="opacity-80" />
-            <p className="font-black text-sm">{remaining}</p>
+            <p className="text-sm font-semibold tabular-nums">{remaining}</p>
           </div>
           <p className="text-xs opacity-70">
             {ended ? 'Completed' : `Until ${new Date(booking.endDate).toLocaleDateString()}`}
           </p>
         </div>
       </div>
-      <div className="p-4 flex items-center justify-between">
+
+      {/* GPS sharing indicator */}
+      {!booking.returnedAt && (
+        <div className="px-4 py-2 bg-green-50 border-b border-green-100 flex items-center gap-1.5">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-[11px] font-bold text-green-700">Your GPS is being shared with the owner</span>
+        </div>
+      )}
+
+      <div className="p-4 space-y-4">
+        {/* Pickup info */}
         <div>
-          <p className="text-xs text-muted-foreground">Pickup</p>
-          <p className="font-bold text-sm">{booking.pickupLocation}</p>
-          {booking.pickupTime && <p className="text-xs text-muted-foreground mt-0.5">{booking.pickupTime}</p>}
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Pickup location</p>
+          <p className="font-bold text-sm mt-0.5">{booking.pickupLocation}</p>
+          {booking.pickupTime && <p className="text-xs text-muted-foreground">{booking.pickupTime}</p>}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="h-9 rounded-xl font-bold gap-1.5">
-            <MapPin size={13} className="text-primary" /> Track
-          </Button>
-          <Button size="sm" className="h-9 rounded-xl font-bold gap-1.5" onClick={() => router.push('/messages')}>
-            <MessageSquare size={13} /> Chat
-          </Button>
-        </div>
+
+        {/* Full rental timeline */}
+        <RentalTimeline
+          createdAt={booking.createdAt}
+          pickedUpAt={booking.pickedUpAt}
+          returnedAt={booking.returnedAt}
+          endDate={booking.endDate}
+          compact={false}
+        />
+
+        {/* Chat */}
+        <ChatPanel bookingId={booking.id} label="Chat with owner" />
       </div>
     </Card>
   );
@@ -91,21 +136,129 @@ function ActiveRentalCard({ booking, vehicle }: {
 
 export default function RenterDashboardPage() {
   const router = useRouter();
-  const { currentUser, bookings, vehicles, messages, bookingsLoading, refreshBookings } = useApp();
+  const { currentUser, bookings, vehicles, bookingsLoading, refreshBookings } = useApp();
+
+  // Location permission gate: 'checking' | 'granted' | 'denied' | 'unsupported'
+  const [locationState, setLocationState] = useState<'checking' | 'granted' | 'denied' | 'unsupported'>('checking');
+
+  // Check / request location permission on mount
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationState('unsupported');
+      return;
+    }
+    // Use the Permissions API for a silent pre-check when available
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          setLocationState('granted');
+        } else if (result.state === 'denied') {
+          setLocationState('denied');
+        } else {
+          // 'prompt' — trigger the actual browser dialog
+          requestLocation();
+        }
+        result.onchange = () => {
+          if (result.state === 'granted') setLocationState('granted');
+          else if (result.state === 'denied') setLocationState('denied');
+        };
+      }).catch(() => requestLocation());
+    } else {
+      requestLocation();
+    }
+
+    function requestLocation() {
+      navigator.geolocation.getCurrentPosition(
+        () => setLocationState('granted'),
+        () => setLocationState('denied'),
+        { timeout: 10000 }
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Trigger rental expiry check in the background
   useEffect(() => {
-    fetch('/api/cron/rental-expiry').catch(() => { /* fire and forget */ });
+    fetch('/api/cron/rental-expiry').catch(() => {});
   }, []);
+
+  // Auto-refresh every 30 s so pickup/return confirmations appear without manual refresh
+  useEffect(() => {
+    const id = setInterval(() => {
+      refreshBookings();
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [refreshBookings]);
+
+  // ── Location gate screens ────────────────────────────────────────────────
+  if (locationState === 'checking') {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4 py-16">
+        <Card className="max-w-sm rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+            <MapPin className="text-primary animate-pulse" size={36} />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">Checking location…</h2>
+          <p className="text-muted-foreground text-sm">Please allow location access when your browser asks.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (locationState === 'denied') {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4 py-16">
+        <Card className="max-w-sm rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+            <MapPin className="text-red-500" size={36} />
+          </div>
+          <h2 className="mb-2 text-2xl font-semibold">Location required</h2>
+          <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+            Location access is <strong>required</strong> to use the renter dashboard. It lets the owner track the vehicle during your rental period.
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800">How to enable</p>
+            <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
+              <li>Click the <strong>lock / info icon</strong> in your browser address bar</li>
+              <li>Find <strong>Location</strong> and set it to <strong>Allow</strong></li>
+              <li>Reload this page</li>
+            </ol>
+          </div>
+          <Button
+            className="h-12 w-full rounded-lg font-medium shadow-sm"
+            onClick={() => window.location.reload()}
+          >
+            I&apos;ve enabled it — reload
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (locationState === 'unsupported') {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4 py-16">
+        <Card className="max-w-sm rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+            <MapPin className="text-red-500" size={36} />
+          </div>
+          <h2 className="mb-2 text-2xl font-semibold">GPS not supported</h2>
+          <p className="text-muted-foreground text-sm">
+            Your browser or device does not support GPS. Please use a modern mobile browser (Chrome, Safari) to access the renter dashboard.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
       <div className="flex flex-1 items-center justify-center px-4 py-16">
-        <Card className="p-10 text-center max-w-sm rounded-3xl shadow-2xl border-none">
-          <div className="flex justify-center mb-4">
-            <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden />
+        <Card className="max-w-sm rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="mb-4 flex justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden />
           </div>
-          <p className="text-muted-foreground font-medium">Loading your session…</p>
+          <p className="font-medium text-muted-foreground">Loading your session…</p>
         </Card>
       </div>
     );
@@ -119,13 +272,13 @@ export default function RenterDashboardPage() {
 
     return (
       <div className="flex flex-1 items-center justify-center px-4 py-16">
-        <Card className="p-10 text-center max-w-md rounded-3xl shadow-2xl border-none">
+        <Card className="max-w-md rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
           {isPending && (
             <>
               <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <Clock className="text-amber-500" size={36} />
               </div>
-              <h2 className="text-2xl font-black mb-2">KYC Under Review</h2>
+              <h2 className="mb-2 text-2xl font-semibold">KYC under review</h2>
               <p className="text-muted-foreground mb-6">
                 Your NID and driving license are being reviewed by our admin team.
                 You will receive an email once approved — usually within 24 hours.
@@ -138,8 +291,8 @@ export default function RenterDashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button onClick={() => router.push('/')} className="w-full h-12 rounded-2xl font-black shadow-xl shadow-primary/20">
-                Browse Vehicles
+              <Button onClick={() => router.push('/')} className="h-12 w-full rounded-lg font-medium shadow-sm">
+                Browse vehicles
               </Button>
             </>
           )}
@@ -149,7 +302,7 @@ export default function RenterDashboardPage() {
               <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <XCircle className="text-red-500" size={36} />
               </div>
-              <h2 className="text-2xl font-black mb-2">KYC Rejected</h2>
+              <h2 className="mb-2 text-2xl font-semibold">KYC rejected</h2>
               {currentUser.verificationNote && (
                 <div className="bg-red-50 border border-red-200 rounded-2xl p-3 text-left mb-4">
                   <p className="text-xs font-bold text-red-700 mb-1">Admin note:</p>
@@ -159,8 +312,8 @@ export default function RenterDashboardPage() {
               <p className="text-muted-foreground mb-6 text-sm">
                 Please resubmit clear images of your NID and driving license.
               </p>
-              <Button onClick={() => router.push('/kyc')} className="w-full h-12 rounded-2xl font-black shadow-xl shadow-primary/20">
-                Resubmit Documents
+              <Button onClick={() => router.push('/kyc')} className="h-12 w-full rounded-lg font-medium shadow-sm">
+                Resubmit documents
               </Button>
             </>
           )}
@@ -170,12 +323,12 @@ export default function RenterDashboardPage() {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
                 <FileText className="text-primary" size={36} />
               </div>
-              <h2 className="text-2xl font-black mb-2">Verify Your Identity</h2>
+              <h2 className="mb-2 text-2xl font-semibold">Verify your identity</h2>
               <p className="text-muted-foreground mb-6">
                 To book vehicles, you need to upload your NID and driving license for admin verification.
               </p>
-              <Button onClick={() => router.push('/kyc')} className="w-full h-12 rounded-2xl font-black shadow-xl shadow-primary/20">
-                Start Verification
+              <Button onClick={() => router.push('/kyc')} className="h-12 w-full rounded-lg font-medium shadow-sm">
+                Start verification
               </Button>
             </>
           )}
@@ -189,8 +342,6 @@ export default function RenterDashboardPage() {
   const activeBookings = userBookings.filter(b => b.status === 'accepted');
   const pendingBookings = userBookings.filter(b => b.status === 'pending');
   const completedBookings = userBookings.filter(b => b.status === 'completed');
-  const unreadMessages = messages.filter(m => m.recipientId === currentUser.id && !m.read).length;
-
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
       pending: 'bg-amber-100 text-amber-700',
@@ -203,67 +354,77 @@ export default function RenterDashboardPage() {
       pending: '⏳ Pending', accepted: '✓ Confirmed', rejected: '✗ Rejected',
       completed: '★ Completed', cancelled: 'Cancelled',
     };
-    return <Badge className={`${map[status] || 'bg-muted text-muted-foreground'} border-none px-3 py-1 rounded-full font-black text-xs`}>{labels[status] || status}</Badge>;
+    return (
+      <Badge
+        className={`${map[status] || 'bg-muted text-muted-foreground'} rounded-full border-none px-3 py-1 text-xs font-medium`}
+      >
+        {labels[status] || status}
+      </Badge>
+    );
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pb-20 md:pb-12">
+    <div className="flex flex-col flex-1 min-h-0 pb-24 md:pb-12">
       <div className="flex-1">
-        <div className="max-w-5xl mx-auto px-4 py-8">
-
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-3xl font-black italic uppercase tracking-tighter">My Dashboard</h1>
-                <Badge className="bg-green-500 text-white gap-1 rounded-full text-[10px]">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <DashboardPageHeader
+            eyebrow="Renter hub"
+            title="Dashboard"
+            description={`Signed in as ${currentUser.name}. Track bookings, active rentals, and messages.`}
+            actions={
+              <>
+                <Badge variant="secondary" className="hidden gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium sm:inline-flex">
                   <ShieldCheck size={10} /> Verified
                 </Badge>
-              </div>
-              <p className="text-muted-foreground">
-                Hello, <span className="font-bold text-foreground">{currentUser.name}</span> 👋 Track your rentals.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 rounded-xl font-bold gap-1.5"
-                onClick={refreshBookings}
-                disabled={bookingsLoading}
-              >
-                <RefreshCw size={14} className={bookingsLoading ? 'animate-spin' : ''} />
-                Refresh
-              </Button>
-              <Button onClick={() => router.push('/')} className="h-11 px-6 rounded-2xl font-black gap-2 shadow-xl shadow-primary/20">
-                <MapIcon size={16} /> Find a Ride
-              </Button>
-            </div>
-          </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 rounded-lg font-medium shadow-sm"
+                  onClick={refreshBookings}
+                  disabled={bookingsLoading}
+                >
+                  <RefreshCw size={14} className={bookingsLoading ? 'animate-spin' : ''} />
+                  Refresh
+                </Button>
+                <Button
+                  onClick={() => router.push('/')}
+                  size="sm"
+                  className="h-9 gap-2 rounded-lg font-medium shadow-sm"
+                >
+                  <MapIcon size={16} /> Find a ride
+                </Button>
+              </>
+            }
+          />
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
-              { label: 'Active Rentals', value: activeBookings.length, icon: Activity, light: 'bg-green-50 text-green-600' },
+              { label: 'Active rentals', value: activeBookings.length, icon: Activity, light: 'bg-green-50 text-green-600' },
               { label: 'Pending', value: pendingBookings.length, icon: Clock, light: 'bg-amber-50 text-amber-600' },
               { label: 'Completed', value: completedBookings.length, icon: CheckCircle2, light: 'bg-blue-50 text-blue-600' },
-              { label: 'Total Spend', value: `৳${totalSpend.toLocaleString()}`, icon: DollarSign, light: 'bg-primary/10 text-primary' },
+              { label: 'Total spend', value: `৳${totalSpend.toLocaleString()}`, icon: DollarSign, light: 'bg-primary/10 text-primary' },
             ].map((stat, i) => (
-              <Card key={i} className="p-5 rounded-2xl border-none shadow-sm bg-white hover:shadow-md transition-shadow">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.light}`}>
+              <Card
+                key={i}
+                className="border border-border/60 bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${stat.light}`}>
                   <stat.icon size={20} />
                 </div>
-                <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mb-1">{stat.label}</p>
-                <p className="text-2xl font-black italic tracking-tighter">{stat.value}</p>
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">{stat.value}</p>
               </Card>
             ))}
           </div>
 
           {/* Loading skeleton */}
           {bookingsLoading && (
-            <div className="space-y-3 mb-6">
-              {[1, 2].map(i => (
-                <div key={i} className="h-24 bg-muted/60 rounded-2xl animate-pulse" />
+            <div className="mb-6 space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-24 animate-pulse rounded-xl border border-border/40 bg-muted/50" />
               ))}
             </div>
           )}
@@ -271,17 +432,24 @@ export default function RenterDashboardPage() {
           {/* Tabs */}
           {!bookingsLoading && (
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="bg-white rounded-2xl p-1.5 h-auto gap-1 shadow-sm border border-border/50">
+              <TabsList className="flex h-auto min-h-11 w-full flex-wrap gap-1 rounded-lg border border-border/60 bg-muted/40 p-1 md:flex-nowrap">
                 {[
                   { value: 'bookings', label: 'My Bookings', count: userBookings.length },
                   { value: 'active', label: 'Active', count: activeBookings.length },
                   { value: 'history', label: 'History', count: completedBookings.length },
                   { value: 'spending', label: 'Spending', count: null },
-                ].map(tab => (
-                  <TabsTrigger key={tab.value} value={tab.value} className="rounded-xl px-4 py-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-sm flex items-center gap-1.5">
+                  { value: 'messages', label: 'Messages', count: null },
+                ].map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:text-sm"
+                  >
                     {tab.label}
                     {tab.count !== null && tab.count > 0 && (
-                      <span className="w-4 h-4 bg-primary/20 data-[state=active]:bg-white/20 rounded-full text-[10px] flex items-center justify-center font-black">{tab.count}</span>
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-semibold data-[state=active]:bg-primary/20">
+                        {tab.count}
+                      </span>
                     )}
                   </TabsTrigger>
                 ))}
@@ -292,7 +460,10 @@ export default function RenterDashboardPage() {
                 {userBookings.length > 0 ? userBookings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).map(booking => {
                   const vehicle = vehicles.find(v => v.id === booking.vehicleId);
                   return vehicle ? (
-                    <Card key={booking.id} className="p-5 rounded-2xl border-none shadow-sm bg-white hover:shadow-md transition-all group overflow-hidden relative">
+                    <Card
+                      key={booking.id}
+                      className="group relative overflow-hidden border border-border/60 bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
+                    >
                       <div className={`absolute left-0 top-0 bottom-0 w-1 ${booking.status === 'accepted' ? 'bg-green-500' : booking.status === 'pending' ? 'bg-amber-500' : booking.status === 'completed' ? 'bg-blue-500' : 'bg-red-400'}`} />
                       <div className="flex gap-4 items-center pl-2">
                         <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
@@ -300,34 +471,60 @@ export default function RenterDashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="font-black text-base">{vehicle.brand} {vehicle.model}</h3>
+                            <h3 className="text-base font-semibold">
+                              {vehicle.brand} {vehicle.model}
+                            </h3>
                             {statusBadge(booking.status)}
+                            {booking.status === 'accepted' && booking.pickedUpAt && !booking.returnedAt && (
+                              <Badge className="border-none bg-green-100 text-[10px] font-medium text-green-700">
+                                ✓ Picked up
+                              </Badge>
+                            )}
+                            {booking.returnedAt && (
+                              <Badge className="border-none bg-blue-100 text-[10px] font-medium text-blue-700">
+                                ✓ Returned
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mb-2">
                             <span className="flex items-center gap-1"><MapPin size={11} className="text-primary" />{booking.pickupLocation}</span>
                             <span className="flex items-center gap-1"><Calendar size={11} className="text-primary" />{new Date(booking.startDate).toLocaleDateString()} – {new Date(booking.endDate).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-lg font-black text-primary">৳{booking.totalPrice.toLocaleString()}</span>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="h-8 rounded-xl text-xs font-bold" onClick={() => router.push('/messages')}>
-                                <MessageSquare size={13} className="mr-1" /> Owner
-                              </Button>
-                              <Button size="sm" className="h-8 rounded-xl text-xs font-bold" onClick={() => router.push(`/vehicle/${vehicle.id}`)}>
-                                Details <ChevronRight size={13} />
-                              </Button>
-                            </div>
+                            <span className="text-lg font-semibold text-primary tabular-nums">
+                              ৳{booking.totalPrice.toLocaleString()}
+                            </span>
+                            <Button size="sm" className="h-8 rounded-xl text-xs font-bold" onClick={() => router.push(`/vehicle/${vehicle.id}`)}>
+                              Details <ChevronRight size={13} />
+                            </Button>
                           </div>
                         </div>
+                      </div>
+                      {/* Timeline for accepted/active bookings */}
+                      {(booking.status === 'accepted' || booking.pickedUpAt || booking.returnedAt) && (
+                        <div className="mt-3 pt-3 border-t border-border/40">
+                          <RentalTimeline
+                            createdAt={booking.createdAt}
+                            pickedUpAt={booking.pickedUpAt}
+                            returnedAt={booking.returnedAt}
+                            endDate={booking.endDate}
+                            compact={false}
+                          />
+                        </div>
+                      )}
+                      <div className="mt-3">
+                        <ChatPanel bookingId={booking.id} label="Chat with owner" />
                       </div>
                     </Card>
                   ) : null;
                 }) : (
-                  <Card className="p-16 text-center border-2 border-dashed border-border/40 rounded-3xl bg-white">
-                    <Calendar className="w-14 h-14 text-muted-foreground/20 mx-auto mb-4" />
-                    <h3 className="text-xl font-black mb-2">No Bookings Yet</h3>
-                    <p className="text-muted-foreground mb-6">Explore vehicles and make your first booking!</p>
-                    <Button onClick={() => router.push('/')} className="rounded-2xl h-12 px-8 font-black shadow-xl shadow-primary/20">Explore Now</Button>
+                  <Card className="rounded-xl border border-dashed border-border/60 bg-card p-16 text-center shadow-sm">
+                    <Calendar className="mx-auto mb-4 h-14 w-14 text-muted-foreground/25" />
+                    <h3 className="mb-2 text-xl font-semibold">No bookings yet</h3>
+                    <p className="mb-6 text-muted-foreground">Explore vehicles and make your first booking.</p>
+                    <Button onClick={() => router.push('/')} className="h-12 rounded-lg px-8 font-medium shadow-sm">
+                      Explore now
+                    </Button>
                   </Card>
                 )}
               </TabsContent>
@@ -340,9 +537,9 @@ export default function RenterDashboardPage() {
                     <ActiveRentalCard key={booking.id} booking={booking} vehicle={vehicle} />
                   ) : null;
                 }) : (
-                  <Card className="p-12 text-center border-none shadow-sm bg-white rounded-3xl">
-                    <Activity className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="font-black text-lg">No Active Rentals</p>
+                  <Card className="rounded-xl border border-border/60 bg-card p-12 text-center shadow-sm">
+                    <Activity className="mx-auto mb-3 h-12 w-12 text-muted-foreground/25" />
+                    <p className="text-lg font-semibold">No active rentals</p>
                     <p className="text-muted-foreground text-sm mt-1">Your confirmed rentals will appear here.</p>
                   </Card>
                 )}
@@ -354,24 +551,31 @@ export default function RenterDashboardPage() {
                   const vehicle = vehicles.find(v => v.id === booking.vehicleId);
                   const days = Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / 86400000);
                   return vehicle ? (
-                    <Card key={booking.id} className="p-5 rounded-2xl border-none shadow-sm bg-white flex items-center gap-4">
+                    <Card
+                      key={booking.id}
+                      className="flex items-center gap-4 border border-border/60 bg-card p-5 shadow-sm"
+                    >
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0">
                         <Image src={vehicle.image} alt={vehicle.model} fill className="object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-black">{vehicle.brand} {vehicle.model}</h3>
+                        <h3 className="font-semibold">
+                          {vehicle.brand} {vehicle.model}
+                        </h3>
                         <p className="text-xs text-muted-foreground">{new Date(booking.startDate).toLocaleDateString()} · {days} days</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-black text-primary">৳{booking.totalPrice.toLocaleString()}</p>
-                        <Badge className="bg-blue-100 text-blue-700 border-none text-[10px] font-black mt-1">Completed</Badge>
+                        <p className="font-semibold text-primary tabular-nums">৳{booking.totalPrice.toLocaleString()}</p>
+                        <Badge className="mt-1 border-none bg-blue-100 text-[10px] font-medium text-blue-700">
+                          Completed
+                        </Badge>
                       </div>
                     </Card>
                   ) : null;
                 }) : (
-                  <Card className="p-12 text-center border-none shadow-sm bg-white rounded-3xl">
-                    <History className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="font-black text-lg">No History Yet</p>
+                  <Card className="rounded-xl border border-border/60 bg-card p-12 text-center shadow-sm">
+                    <History className="mx-auto mb-3 h-12 w-12 text-muted-foreground/25" />
+                    <p className="text-lg font-semibold">No history yet</p>
                     <p className="text-muted-foreground text-sm">Completed rentals will show here.</p>
                   </Card>
                 )}
@@ -385,17 +589,22 @@ export default function RenterDashboardPage() {
                     { label: 'Avg per Rental', value: userBookings.length ? `৳${Math.round(totalSpend / userBookings.length).toLocaleString()}` : '৳0', sub: 'Per booking', icon: TrendingUp, color: 'from-blue-500 to-blue-600' },
                     { label: 'Total Days', value: userBookings.reduce((s, b) => s + Math.ceil((new Date(b.endDate).getTime() - new Date(b.startDate).getTime()) / 86400000), 0), sub: 'Days rented', icon: Calendar, color: 'from-green-500 to-green-600' },
                   ].map((item, i) => (
-                    <Card key={i} className={`p-6 rounded-2xl border-none text-white bg-gradient-to-br ${item.color} shadow-lg`}>
-                      <item.icon size={20} className="mb-3 opacity-80" />
-                      <p className="text-3xl font-black mb-1">{item.value}</p>
-                      <p className="text-xs opacity-80 font-bold uppercase tracking-widest">{item.label}</p>
+                    <Card
+                      key={i}
+                      className={`rounded-xl border-0 p-6 text-white shadow-md bg-gradient-to-br ${item.color}`}
+                    >
+                      <item.icon size={20} className="mb-3 opacity-90" />
+                      <p className="mb-1 text-3xl font-semibold tabular-nums">{item.value}</p>
+                      <p className="text-xs font-medium uppercase tracking-wider opacity-90">{item.label}</p>
                       <p className="text-xs opacity-60 mt-0.5">{item.sub}</p>
                     </Card>
                   ))}
                 </div>
-                <Card className="rounded-2xl border-none shadow-sm bg-white overflow-hidden">
-                  <div className="px-6 py-4 border-b border-border/50">
-                    <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground">Booking Breakdown</h3>
+                <Card className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                  <div className="border-b border-border/60 px-6 py-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Booking breakdown
+                    </h3>
                   </div>
                   <div className="divide-y divide-border/40">
                     {userBookings.map(booking => {
@@ -408,7 +617,9 @@ export default function RenterDashboardPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             {statusBadge(booking.status)}
-                            <span className="font-black text-primary">৳{booking.totalPrice.toLocaleString()}</span>
+                            <span className="font-semibold text-primary tabular-nums">
+                              ৳{booking.totalPrice.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       ) : null;
@@ -416,30 +627,17 @@ export default function RenterDashboardPage() {
                   </div>
                 </Card>
               </TabsContent>
+
+              {/* Messages */}
+              <TabsContent value="messages" className="animate-in fade-in duration-300">
+                <InboxPanel currentUserId={currentUser.id} />
+              </TabsContent>
             </Tabs>
           )}
         </div>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border px-6 py-2 flex justify-around items-center z-50 md:hidden">
-        {[
-          { icon: MapIcon, label: 'Explore', href: '/' },
-          { icon: Car, label: 'Bookings', href: '/renter-dashboard', active: true },
-          { icon: MessageSquare, label: 'Messages', href: '/messages', badge: unreadMessages },
-          { icon: ShieldCheck, label: 'Profile', href: '/renter-dashboard' },
-        ].map(item => (
-          <button
-            key={item.label}
-            onClick={() => router.push(item.href)}
-            className={`flex flex-col items-center gap-1 relative transition-colors ${item.active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <item.icon size={22} />
-            {'badge' in item && item.badge ? <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">{item.badge}</span> : null}
-            <span className="text-[10px] font-bold">{item.label}</span>
-          </button>
-        ))}
-      </div>
+      <MobileExplorerTabBar />
     </div>
   );
 }

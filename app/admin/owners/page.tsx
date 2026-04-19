@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, MessageSquare } from 'lucide-react';
+import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -79,15 +80,13 @@ export default function AdminOwnersListPage() {
   }, [owners, query]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight md:text-3xl">Owners</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Every owner account, verification state, and vehicle count. Open a row for full KYC and fleet details.
-        </p>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-8">
+      <AdminPageHeader
+        title="Owners"
+        description="Every owner account, verification state, and vehicle count. Open a row for full KYC and fleet details."
+      />
 
-      <Card className="border-0 shadow-md p-4">
+      <Card className="border border-border/60 bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -104,7 +103,7 @@ export default function AdminOwnersListPage() {
                 key={s}
                 variant={filter === s ? 'default' : 'outline'}
                 size="sm"
-                className="font-bold capitalize"
+                className="font-medium capitalize"
                 onClick={() => setFilter(s)}
               >
                 {s === 'ALL' ? 'All' : s.toLowerCase()}
@@ -115,20 +114,30 @@ export default function AdminOwnersListPage() {
       </Card>
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">{error}</Card>
+        <Card className="border border-destructive/30 bg-destructive/5 p-4 text-sm font-medium text-destructive">
+          {error}
+        </Card>
       )}
 
-      <Card className="border-0 shadow-md overflow-hidden">
+      <Card className="overflow-hidden border border-border/60 bg-card shadow-sm">
         {loading ? (
           <div className="p-12 text-center text-sm font-medium text-muted-foreground">Loading owners…</div>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="font-black">Owner</TableHead>
-                <TableHead className="font-black">Contact</TableHead>
-                <TableHead className="font-black">Status</TableHead>
-                <TableHead className="font-black text-right">Vehicles</TableHead>
+              <TableRow className="border-b bg-muted/30 hover:bg-muted/30">
+                <TableHead className="h-11 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Owner
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Contact
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Status
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Vehicles
+                </TableHead>
                 <TableHead className="w-[100px]" />
               </TableRow>
             </TableHeader>
@@ -141,25 +150,32 @@ export default function AdminOwnersListPage() {
                 </TableRow>
               ) : (
                 filtered.map((r) => (
-                  <TableRow key={r.id} className="group">
-                    <TableCell className="font-bold">{r.fullName}</TableCell>
+                  <TableRow key={r.id} className="group border-border/50 transition-colors hover:bg-muted/25">
+                    <TableCell className="font-medium">{r.fullName}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       <div>{r.email}</div>
                       <div className="text-xs">{r.phone}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusBadgeVariant(r.verificationStatus)} className="font-bold capitalize">
+                      <Badge variant={statusBadgeVariant(r.verificationStatus)} className="font-medium capitalize">
                         {r.verificationStatus.toLowerCase()}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums font-bold">{r._count.vehicles}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">{r._count.vehicles}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="font-bold gap-0" asChild>
-                        <Link href={`/admin/owners/${r.id}`}>
-                          View
-                          <ChevronRight className="h-4 w-4 opacity-60" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" className="gap-0.5 font-medium" asChild>
+                          <Link href={`/admin/messages?with=${r.id}&name=${encodeURIComponent(r.fullName)}`}>
+                            <MessageSquare className="h-3.5 w-3.5 opacity-60" /> Message
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="gap-0 font-medium" asChild>
+                          <Link href={`/admin/owners/${r.id}`}>
+                            View
+                            <ChevronRight className="h-4 w-4 opacity-60" />
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

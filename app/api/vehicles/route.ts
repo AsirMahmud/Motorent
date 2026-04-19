@@ -23,6 +23,24 @@ type VehicleBody = {
   insurancePaperUrl?: string;
 };
 
+/** Geocode a location string to lat/lng via Nominatim (free, no key needed). */
+async function geocodeLocation(
+  location: string
+): Promise<{ latitude: number; longitude: number } | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "MotoRent/1.0 (vehicle-listing-geocoder)" },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Array<{ lat: string; lon: string }>;
+    if (!data.length) return null;
+    return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
+  } catch {
+    return null;
+  }
+}
+
 const FUEL = new Set(["gasoline", "diesel", "electric", "hybrid"]);
 const TRANS = new Set(["manual", "automatic"]);
 
@@ -111,6 +129,9 @@ export async function POST(request: Request) {
     ? body.features.map((s) => String(s).trim()).filter(Boolean)
     : [];
 
+  const locationStr = body.location!.trim();
+  const coords = await geocodeLocation(locationStr);
+
   const vehicle = await db.vehicle.create({
     data: {
       ownerId: user.id,
@@ -119,7 +140,8 @@ export async function POST(request: Request) {
       model: body.model!.trim(),
       year: yr,
       registrationNumber: body.registrationNumber!.trim(),
-      location: body.location!.trim(),
+      location: locationStr,
+      ...(coords ?? {}),
       seats,
       fuelType: fuel,
       transmission: trans,

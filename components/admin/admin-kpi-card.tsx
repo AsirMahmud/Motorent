@@ -27,26 +27,22 @@ export function AdminKpiCard({
   return (
     <Card
       className={cn(
-        'relative overflow-hidden border-0 shadow-md shadow-black/5 bg-gradient-to-br p-5',
+        'relative overflow-hidden border border-border/60 bg-gradient-to-br p-5 shadow-sm',
         accentRing[accent]
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-1 text-3xl font-black tabular-nums tracking-tight">{value}</p>
-          {hint ? (
-            <p className="mt-1.5 text-xs text-muted-foreground leading-snug">{hint}</p>
-          ) : null}
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="mt-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground">{value}</p>
+          {hint ? <p className="mt-2 text-xs leading-snug text-muted-foreground">{hint}</p> : null}
         </div>
         <div
           className={cn(
-            'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/80 shadow-sm dark:bg-white/10'
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/50 bg-background/80'
           )}
         >
-          <Icon className="h-5 w-5" strokeWidth={2} />
+          <Icon className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
         </div>
       </div>
     </Card>

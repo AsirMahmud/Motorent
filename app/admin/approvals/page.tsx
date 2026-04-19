@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { AdminPageHeader } from '@/components/admin/admin-page-header';
 
 type PendingOwner = {
   id: string;
@@ -60,7 +61,7 @@ function DocLinks(props: {
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg border border-border bg-white px-2.5 py-1 text-xs font-bold text-primary hover:bg-muted/80"
+              className="inline-flex items-center gap-1 rounded-md border border-border/80 bg-background px-2.5 py-1.5 text-xs font-medium text-primary shadow-sm hover:bg-muted/60"
             >
               <FileText className="h-3.5 w-3.5" />
               {item.label}
@@ -211,31 +212,33 @@ export default function AdminApprovalsPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-5xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight md:text-3xl">Approval queue</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Approve or reject owner KYC and vehicle listings. Rejections can include a short note emailed to the user.
-          </p>
-        </div>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <AdminPageHeader
+          title="Approval queue"
+          description="Approve or reject renter and owner KYC and vehicle listings. Rejections can include a short note emailed to the user."
+        />
 
-        {loading && <Card className="p-8 text-center text-sm font-medium text-muted-foreground">Loading…</Card>}
+        {loading && (
+          <Card className="border border-border/60 bg-card p-10 text-center text-sm font-medium text-muted-foreground shadow-sm">
+            Loading…
+          </Card>
+        )}
         {error && (
-          <Card className="border-red-200 bg-red-50 p-4 flex items-center gap-2 text-sm font-medium text-red-800">
+          <Card className="flex items-center gap-2 border border-destructive/30 bg-destructive/5 p-4 text-sm font-medium text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" /> {error}
           </Card>
         )}
 
         {!loading && !error && (
           <Tabs defaultValue="renters" className="w-full">
-            <TabsList className="grid w-full max-w-lg grid-cols-3">
-              <TabsTrigger value="renters" className="font-bold">
+            <TabsList className="grid h-11 w-full max-w-xl grid-cols-3 rounded-lg border border-border/60 bg-muted/40 p-1">
+              <TabsTrigger value="renters" className="rounded-md text-xs font-semibold sm:text-sm">
                 Renters ({pendingRenters.length})
               </TabsTrigger>
-              <TabsTrigger value="owners" className="font-bold">
+              <TabsTrigger value="owners" className="rounded-md text-xs font-semibold sm:text-sm">
                 Owners ({owners.length})
               </TabsTrigger>
-              <TabsTrigger value="vehicles" className="font-bold">
+              <TabsTrigger value="vehicles" className="rounded-md text-xs font-semibold sm:text-sm">
                 Vehicles ({vehicles.length})
               </TabsTrigger>
             </TabsList>
@@ -243,19 +246,21 @@ export default function AdminApprovalsPage() {
             {/* Pending Renters tab */}
             <TabsContent value="renters" className="mt-4 space-y-4">
               {pendingRenters.length === 0 ? (
-                <Card className="p-8 text-center text-muted-foreground text-sm">No pending renter KYC submissions.</Card>
+                <Card className="border border-border/60 bg-card p-10 text-center text-sm text-muted-foreground shadow-sm">
+                  No pending renter KYC submissions.
+                </Card>
               ) : (
                 pendingRenters.map((renter) => (
-                  <Card key={renter.id} className="overflow-hidden border-0 shadow-md">
-                    <div className="border-b border-border/80 bg-muted/30 px-5 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <Card key={renter.id} className="overflow-hidden border border-border/60 bg-card shadow-sm">
+                    <div className="flex flex-col gap-1 border-b border-border/60 bg-muted/25 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="font-black text-lg">{renter.fullName}</p>
+                        <p className="text-lg font-semibold tracking-tight">{renter.fullName}</p>
                         <p className="text-sm text-muted-foreground">{renter.email} · {renter.phone}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Submitted {new Date(renter.createdAt).toLocaleString()}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" className="font-bold shrink-0 mt-2 sm:mt-0" asChild>
+                      <Button variant="outline" size="sm" className="mt-2 shrink-0 font-medium sm:mt-0" asChild>
                         <Link href={`/admin/renters/${renter.id}`}>Full profile</Link>
                       </Button>
                     </div>
@@ -267,10 +272,16 @@ export default function AdminApprovalsPage() {
                         ]}
                       />
                       <div className="flex flex-wrap gap-2">
-                        <Button size="sm" variant="outline" className="font-bold" disabled={actionLoading} onClick={() => openRejectRenter(renter.id)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="font-medium"
+                          disabled={actionLoading}
+                          onClick={() => openRejectRenter(renter.id)}
+                        >
                           <XCircle className="mr-1.5 h-4 w-4" /> Reject
                         </Button>
-                        <Button size="sm" className="font-bold" disabled={actionLoading} onClick={() => approveRenter(renter.id)}>
+                        <Button size="sm" className="font-medium" disabled={actionLoading} onClick={() => approveRenter(renter.id)}>
                           <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve KYC
                         </Button>
                       </div>
@@ -282,13 +293,15 @@ export default function AdminApprovalsPage() {
 
             <TabsContent value="owners" className="mt-4 space-y-4">
               {owners.length === 0 ? (
-                <Card className="p-8 text-center text-muted-foreground text-sm">No pending owner verifications.</Card>
+                <Card className="border border-border/60 bg-card p-10 text-center text-sm text-muted-foreground shadow-sm">
+                  No pending owner verifications.
+                </Card>
               ) : (
                 owners.map((owner) => (
-                  <Card key={owner.id} className="overflow-hidden border-0 shadow-md">
-                    <div className="border-b border-border/80 bg-muted/30 px-5 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <Card key={owner.id} className="overflow-hidden border border-border/60 bg-card shadow-sm">
+                    <div className="flex flex-col gap-1 border-b border-border/60 bg-muted/25 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="font-black text-lg">{owner.fullName}</p>
+                        <p className="text-lg font-semibold tracking-tight">{owner.fullName}</p>
                         <p className="text-sm text-muted-foreground">
                           {owner.email} · {owner.phone}
                         </p>
@@ -296,7 +309,7 @@ export default function AdminApprovalsPage() {
                           Submitted {new Date(owner.createdAt).toLocaleString()}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" className="font-bold shrink-0 mt-2 sm:mt-0" asChild>
+                      <Button variant="outline" size="sm" className="mt-2 shrink-0 font-medium sm:mt-0" asChild>
                         <Link href={`/admin/owners/${owner.id}`}>Full profile</Link>
                       </Button>
                     </div>
@@ -313,7 +326,7 @@ export default function AdminApprovalsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="font-bold"
+                          className="font-medium"
                           disabled={actionLoading}
                           onClick={() => openRejectOwner(owner.id)}
                         >
@@ -321,7 +334,7 @@ export default function AdminApprovalsPage() {
                         </Button>
                         <Button
                           size="sm"
-                          className="font-bold"
+                          className="font-medium"
                           disabled={actionLoading}
                           onClick={() => approveOwner(owner.id)}
                         >
@@ -336,24 +349,26 @@ export default function AdminApprovalsPage() {
 
             <TabsContent value="vehicles" className="mt-4 space-y-4">
               {vehicles.length === 0 ? (
-                <Card className="p-8 text-center text-muted-foreground text-sm">No pending vehicles.</Card>
+                <Card className="border border-border/60 bg-card p-10 text-center text-sm text-muted-foreground shadow-sm">
+                  No pending vehicles.
+                </Card>
               ) : (
                 vehicles.map((vehicle) => (
-                  <Card key={vehicle.id} className="overflow-hidden border-0 shadow-md">
-                    <div className="border-b border-border/80 bg-muted/30 px-5 py-4">
-                      <p className="font-black text-lg">
+                  <Card key={vehicle.id} className="overflow-hidden border border-border/60 bg-card shadow-sm">
+                    <div className="border-b border-border/60 bg-muted/25 px-5 py-4">
+                      <p className="text-lg font-semibold tracking-tight">
                         {vehicle.brand} {vehicle.model}{' '}
-                        <span className="text-muted-foreground font-bold">({vehicle.year})</span>
+                        <span className="font-medium text-muted-foreground">({vehicle.year})</span>
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Reg: {vehicle.registrationNumber} · ৳{vehicle.dailyRate}/day
                       </p>
-                      <p className="text-sm mt-2">
-                        <span className="font-bold text-foreground">Owner:</span>{' '}
+                      <p className="mt-2 text-sm">
+                        <span className="font-semibold text-foreground">Owner:</span>{' '}
                         {vehicle.owner.fullName} · {vehicle.owner.email}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="font-bold" asChild>
+                        <Button variant="outline" size="sm" className="font-medium" asChild>
                           <Link href={`/admin/owners/${vehicle.owner.id}`}>Owner profile</Link>
                         </Button>
                       </div>
@@ -370,7 +385,7 @@ export default function AdminApprovalsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="font-bold"
+                          className="font-medium"
                           disabled={actionLoading}
                           onClick={() => openRejectVehicle(vehicle.id)}
                         >
@@ -378,7 +393,7 @@ export default function AdminApprovalsPage() {
                         </Button>
                         <Button
                           size="sm"
-                          className="font-bold"
+                          className="font-medium"
                           disabled={actionLoading}
                           onClick={() => approveVehicle(vehicle.id)}
                         >
@@ -397,7 +412,7 @@ export default function AdminApprovalsPage() {
       <Dialog open={rejectOpen} onOpenChange={(o) => !o && closeReject()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-black">
+            <DialogTitle className="font-semibold">
               Reject {rejectTarget?.type === 'vehicle' ? 'vehicle' : 'owner profile'}?
             </DialogTitle>
           </DialogHeader>
@@ -415,10 +430,10 @@ export default function AdminApprovalsPage() {
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={closeReject} className="font-bold">
+            <Button variant="outline" onClick={closeReject} className="font-medium">
               Cancel
             </Button>
-            <Button variant="destructive" className="font-bold" onClick={submitReject} disabled={actionLoading}>
+            <Button variant="destructive" className="font-medium" onClick={submitReject} disabled={actionLoading}>
               Confirm reject
             </Button>
           </DialogFooter>

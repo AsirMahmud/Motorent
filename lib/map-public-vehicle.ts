@@ -10,6 +10,8 @@ export type PublicVehicleApi = {
   year: number;
   registrationNumber: string;
   location: string;
+  latitude: number | null;
+  longitude: number | null;
   seats: number;
   fuelType: string;
   transmission: string;
@@ -22,6 +24,8 @@ export type PublicVehicleApi = {
   viewCount: number;
   /** Omitted in older clients; defaults to APPROVED in the mapper. */
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  /** True when the vehicle currently has an accepted, un-returned booking. */
+  isOnRental?: boolean;
   reviewNote?: string | null;
   owner?: {
     id: string;
@@ -57,8 +61,12 @@ export function mapPublicVehicleApiToVehicle(v: PublicVehicleApi): Vehicle {
     rating: 0,
     reviewsCount: 0,
     location: v.location,
-    coordinates: DHAKA_CENTER,
-    isAvailable: listingStatus === 'APPROVED',
+    coordinates:
+      v.latitude != null && v.longitude != null
+        ? { lat: v.latitude, lng: v.longitude }
+        : DHAKA_CENTER,
+    isOnRental: v.isOnRental ?? false,
+    isAvailable: listingStatus === 'APPROVED' && !(v.isOnRental ?? false),
     status:
       listingStatus === 'REJECTED'
         ? 'rejected'

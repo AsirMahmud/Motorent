@@ -15,10 +15,11 @@ import {
 import {
   Bike, Menu, X, MessageSquare, LayoutDashboard, LogOut,
   MapPin, Calendar, Car, ChevronDown,
-  PlusCircle, Home, ClipboardCheck, Users,
+  PlusCircle, Home, ClipboardCheck, Users, UserCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { UserRole } from '@/lib/types';
+import { NotificationBell } from '@/components/notification-bell';
 
 type HeaderProps = {
   /** When set (e.g. on a role-protected layout), nav matches this role even before client session hydrates */
@@ -47,10 +48,6 @@ export function Header({ forcedRole }: HeaderProps) {
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
-  const unreadCount = messages.filter(
-    m => m.recipientId === currentUser?.id && !m.read
-  ).length;
-
   const renterNavLinks = [
     { href: '/home', label: 'Explore', icon: MapPin },
     { href: '/browse', label: 'Browse', icon: Search_ },
@@ -66,10 +63,21 @@ export function Header({ forcedRole }: HeaderProps) {
   ];
 
   const adminNavLinks = [
-    { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+    { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true as const },
     { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
     { href: '/admin/owners', label: 'Owners', icon: Users },
+    { href: '/admin/renters', label: 'Renters', icon: UserCircle },
+    { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
   ];
+
+  type HeaderNavLink = (typeof adminNavLinks)[number];
+  const navItemIsActive = (
+    link: HeaderNavLink | (typeof ownerNavLinks)[number] | (typeof renterNavLinks)[number]
+  ) => {
+    if ('exact' in link && link.exact) return pathname === link.href;
+    if (link.href === '/') return pathname === '/';
+    return pathname === link.href || pathname.startsWith(link.href + '/');
+  };
 
   const getNavLinks = () => {
     if (!effectiveRole) return [];
@@ -79,6 +87,9 @@ export function Header({ forcedRole }: HeaderProps) {
   };
 
   const navLinks = getNavLinks();
+  const accountName = currentUser?.name?.trim() || 'Account';
+  const accountInitial = accountName.charAt(0).toUpperCase() || '?';
+  const accountFirstWord = accountName.split(/\s+/)[0] || accountName;
 
   return (
     <header className="bg-white/95 backdrop-blur-lg border-b border-border sticky top-0 z-50 font-sans shadow-sm">
@@ -103,12 +114,9 @@ export function Header({ forcedRole }: HeaderProps) {
               <Link
                 key={link.href + link.label}
                 href={link.href}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive(link.href) && link.href !== '/'
-                    ? 'bg-primary/10 text-primary'
-                    : isActive(link.href) && link.href === '/home'
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  navItemIsActive(link) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
               >
                 <link.icon size={15} />
                 {link.label}
@@ -136,22 +144,17 @@ export function Header({ forcedRole }: HeaderProps) {
           {currentUser ? (
             <div className="flex items-center gap-2">
               {/* Notification Bell */}
-              <Link href="/messages" className="relative p-2 hover:bg-muted rounded-xl transition-colors text-muted-foreground hover:text-primary">
-                <MessageSquare size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-                )}
-              </Link>
+              <NotificationBell />
 
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 px-2 py-1.5 bg-muted/50 hover:bg-muted transition-colors rounded-xl border border-transparent hover:border-border">
                     <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-black text-sm">
-                      {currentUser.name.charAt(0)}
+                      {accountInitial}
                     </div>
                     <div className="hidden sm:flex flex-col items-start">
-                      <span className="text-xs font-black leading-none">{currentUser.name.split(' ')[0]}</span>
+                      <span className="text-xs font-black leading-none">{accountFirstWord}</span>
                       <span className="text-[10px] text-muted-foreground leading-none mt-0.5 capitalize">{currentUser.role}</span>
                     </div>
                     <ChevronDown size={14} className="text-muted-foreground hidden sm:block" />
@@ -159,7 +162,7 @@ export function Header({ forcedRole }: HeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl shadow-2xl border border-border mt-2">
                   <div className="px-3 py-2 mb-1">
-                    <p className="font-bold text-sm">{currentUser.name}</p>
+                    <p className="font-bold text-sm">{accountName}</p>
                     <p className="text-xs text-muted-foreground">{currentUser.phone}</p>
                   </div>
                   <DropdownMenuSeparator />
@@ -169,9 +172,11 @@ export function Header({ forcedRole }: HeaderProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer">
-                    <Link href="/messages" className="flex items-center gap-2.5 font-bold">
+                    <Link
+                      href={effectiveRole === 'admin' ? '/admin/messages' : '/messages'}
+                      className="flex items-center gap-2.5 font-bold"
+                    >
                       <MessageSquare size={16} className="text-muted-foreground" /> Messages
-                      {unreadCount > 0 && <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black">{unreadCount}</span>}
                     </Link>
                   </DropdownMenuItem>
                   {effectiveRole === 'owner' && (
@@ -229,10 +234,10 @@ export function Header({ forcedRole }: HeaderProps) {
               {currentUser && (
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl mb-4">
                   <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-black">
-                    {currentUser.name.charAt(0)}
+                    {accountInitial}
                   </div>
                   <div>
-                    <p className="font-black text-sm">{currentUser.name}</p>
+                    <p className="font-black text-sm">{accountName}</p>
                     <p className="text-xs text-muted-foreground capitalize">{currentUser.role}</p>
                   </div>
                 </div>
@@ -244,8 +249,9 @@ export function Header({ forcedRole }: HeaderProps) {
                 <Link
                   key={link.href + link.label}
                   href={link.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${isActive(link.href) ? 'bg-primary text-white' : 'text-foreground hover:bg-muted'
-                    }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    navItemIsActive(link) ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
+                  }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <link.icon size={18} /> {link.label}

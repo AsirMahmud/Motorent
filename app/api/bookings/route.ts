@@ -137,6 +137,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Block if the vehicle is currently on an active rental
+  const activeRental = await db.booking.findFirst({
+    where: { vehicleId: vehicle.id, status: "ACCEPTED", returnedAt: null },
+    select: { id: true, endDate: true },
+  });
+  if (activeRental) {
+    return NextResponse.json(
+      {
+        error: `This vehicle is currently on an active rental and is unavailable until ${new Date(activeRental.endDate).toLocaleDateString()}.`,
+      },
+      { status: 409 }
+    );
+  }
+
   const days = daysBetween(start, end);
   const totalPrice = days * vehicle.dailyRate;
 

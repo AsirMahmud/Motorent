@@ -153,18 +153,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Partner Logos */}
-        <section className="py-12 border-y border-slate-100 bg-white">
-          <div className="container mx-auto px-4">
-            <p className="text-center text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Trusted by Global Leaders</p>
-            <div className="flex flex-wrap justify-center gap-12 lg:gap-24 opacity-30 grayscale contrast-125">
-              {['Yamaha', 'Honda', 'Suzuki', 'Toyota', 'Mitsubishi'].map((brand) => (
-                <span key={brand} className="text-2xl font-black italic tracking-tighter">{brand}</span>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Stats Section */}
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
@@ -444,66 +432,6 @@ export default function LandingPage() {
                     Browse Vehicles
                   </Button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        {/* App Download Section */}
-        <section className="py-24 bg-slate-50 overflow-hidden">
-          <div className="container mx-auto px-4">
-            <div className="bg-slate-900 rounded-[60px] p-12 lg:p-24 flex flex-col lg:flex-row items-center gap-16 relative shadow-2xl">
-              <div className="absolute top-0 right-0 w-full h-full opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #ED6140 0%, transparent 40%)' }} />
-              <div className="flex-1 text-center lg:text-left z-10">
-                <Badge className="mb-6 bg-primary text-white font-black px-4 py-1.5 rounded-full uppercase tracking-widest">Mobile First</Badge>
-                <h2 className="text-4xl lg:text-6xl font-black text-white mb-8 tracking-tighter">Your Ride, <span className="text-primary italic">In Your Pocket.</span></h2>
-                <p className="text-xl text-slate-400 font-medium leading-relaxed mb-10 max-w-xl">
-                  Download the MotoRent app to manage your bookings, message owners, and find rides on the go. Available for iOS and Android.
-                </p>
-                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                  <Button size="lg" className="h-16 px-8 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-black gap-3">
-                    <Smartphone size={24} /> App Store
-                  </Button>
-                  <Button size="lg" className="h-16 px-8 rounded-2xl bg-white/10 text-white border-white/20 hover:bg-white/20 font-black gap-3 backdrop-blur-xl">
-                    <Play size={24} /> Google Play
-                  </Button>
-                </div>
-              </div>
-              <div className="flex-1 relative flex justify-center items-center">
-                <div className="w-64 h-[500px] bg-slate-800 rounded-[40px] border-[8px] border-slate-700 relative shadow-2xl overflow-hidden group">
-                   <Image src="/hero-bike.png" alt="App Preview" fill className="object-cover opacity-50 group-hover:scale-110 transition-transform duration-1000" />
-                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                     <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/10">
-                       <p className="text-white font-black text-sm mb-1">Ride Confirmed!</p>
-                       <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Pickup at 10:00 AM</p>
-                     </div>
-                   </div>
-                </div>
-                {/* Decorative rings */}
-                <div className="absolute w-[400px] h-[400px] border border-white/5 rounded-full -z-10 animate-spin-slow" />
-                <div className="absolute w-[500px] h-[500px] border border-white/5 rounded-full -z-10 animate-reverse-spin-slow" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Newsletter Section */}
-        <section className="py-24 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto bg-primary/5 rounded-[50px] p-12 lg:p-20 text-center relative overflow-hidden border border-primary/10">
-              <div className="relative z-10">
-                <h2 className="text-3xl lg:text-5xl font-black mb-6 tracking-tight">Stay in the <span className="text-primary">Loop.</span></h2>
-                <p className="text-lg text-slate-600 font-medium mb-10 max-w-xl mx-auto leading-relaxed">
-                  Join 5,000+ subscribers for the latest updates, exclusive deals, and travel inspiration.
-                </p>
-                <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" onSubmit={e => e.preventDefault()}>
-                  <input 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    className="flex-1 h-14 rounded-2xl px-6 bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium text-slate-900 shadow-sm"
-                  />
-                  <Button size="lg" className="h-14 px-8 rounded-2xl font-black shadow-xl">Subscribe</Button>
-                </form>
-                <p className="mt-6 text-slate-400 text-xs font-bold uppercase tracking-widest">We value your privacy. Unsubscribe anytime.</p>
               </div>
             </div>
           </div>

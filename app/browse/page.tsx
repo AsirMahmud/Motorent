@@ -10,12 +10,14 @@ import {
 } from '@/components/ui/select';
 import { useApp } from '@/lib/context';
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { Search, Sliders, Bike, Car, Star, MapPin, LayoutGrid, List, Filter, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { MobileExplorerTabBar } from '@/components/mobile-explorer-tab-bar';
 
 export default function BrowsePage() {
-  const { vehicles } = useApp();
+  const { vehicles, currentUser } = useApp();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('rating');
@@ -56,7 +58,12 @@ export default function BrowsePage() {
   const hasFilters = searchTerm || typeFilter !== 'all' || priceFilter !== 'all';
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div
+      className={cn(
+        'flex min-h-screen flex-col bg-[#F8FAFC] font-sans',
+        currentUser && 'pb-24 md:pb-0'
+      )}
+    >
       <Header />
 
       {/* Hero search bar */}
@@ -241,6 +248,7 @@ export default function BrowsePage() {
           )}
         </div>
       </section>
+      {currentUser ? <MobileExplorerTabBar /> : null}
     </div>
   );
 }

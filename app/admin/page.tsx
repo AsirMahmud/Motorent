@@ -6,6 +6,7 @@ import {
   Users, UserCircle, Car, ClipboardList, Clock, ArrowRight, Shield, BookOpen, Activity,
 } from 'lucide-react';
 import { AdminKpiCard } from '@/components/admin/admin-kpi-card';
+import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -48,31 +49,32 @@ export default function AdminOverviewPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight md:text-3xl">Admin overview</h1>
-          <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-            Platform health, user counts, verification queues, and booking activity.
-          </p>
-        </div>
-        <Button variant="outline" className="shrink-0 font-bold" asChild>
-          <Link href="/admin/approvals">
-            Open approval queue <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-10">
+      <AdminPageHeader
+        title="Overview"
+        description="Platform health, user counts, verification queues, and booking activity."
+        actions={
+          <Button variant="outline" size="sm" className="font-medium shadow-sm" asChild>
+            <Link href="/admin/approvals">
+              Approval queue
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        }
+      />
 
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="h-28 animate-pulse bg-muted/80 border-0" />
+            <Card key={i} className="h-28 animate-pulse border border-border/50 bg-muted/60" />
           ))}
         </div>
       )}
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">{error}</Card>
+        <Card className="border border-destructive/30 bg-destructive/5 p-4 text-sm font-medium text-destructive">
+          {error}
+        </Card>
       )}
 
       {stats && !loading && (
@@ -159,32 +161,32 @@ export default function AdminOverviewPage() {
 
           {/* Quick actions */}
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="p-6 shadow-md border-0 bg-white">
-              <h2 className="text-lg font-black">Quick actions</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+            <Card className="border border-border/60 bg-card p-6 shadow-sm">
+              <h2 className="text-base font-semibold tracking-tight">Quick actions</h2>
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 Jump to verification work or browse every profile.
               </p>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row flex-wrap">
-                <Button className="font-bold" asChild>
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" className="font-medium" asChild>
                   <Link href="/admin/approvals">Review pending items</Link>
                 </Button>
-                <Button variant="outline" className="font-bold" asChild>
+                <Button variant="outline" size="sm" className="font-medium" asChild>
                   <Link href="/admin/owners">Browse owners</Link>
                 </Button>
-                <Button variant="outline" className="font-bold" asChild>
+                <Button variant="outline" size="sm" className="font-medium" asChild>
                   <Link href="/admin/renters">Browse renters</Link>
                 </Button>
               </div>
             </Card>
-            <Card className="p-6 shadow-md border-0 bg-white">
-              <h2 className="text-lg font-black">How verification works</h2>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <Card className="border border-border/60 bg-card p-6 shadow-sm">
+              <h2 className="text-base font-semibold tracking-tight">How verification works</h2>
+              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
                 <li>
-                  <span className="font-bold text-foreground">Owners</span> — register with email + 4 docs
+                  <span className="font-semibold text-foreground">Owners</span> — register with email + 4 docs
                   (NID, license, ownership paper, photo). Admin approves before they can list vehicles.
                 </li>
                 <li>
-                  <span className="font-bold text-foreground">Renters</span> — sign up with email or Google,
+                  <span className="font-semibold text-foreground">Renters</span> — sign up with email or Google,
                   then upload NID + driving license. Admin approves before they can send booking requests.
                 </li>
               </ul>

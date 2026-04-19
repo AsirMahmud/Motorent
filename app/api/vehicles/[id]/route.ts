@@ -11,6 +11,8 @@ const vehicleSelect = {
   year: true,
   registrationNumber: true,
   location: true,
+  latitude: true,
+  longitude: true,
   seats: true,
   fuelType: true,
   transmission: true,

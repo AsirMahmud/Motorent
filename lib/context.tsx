@@ -20,6 +20,11 @@ type ApiBooking = {
   pickupLocation: string;
   dropoffLocation?: string;
   notes?: string;
+  pickedUpAt?: string | null;
+  returnedAt?: string | null;
+  renterLat?: number | null;
+  renterLng?: number | null;
+  renterLocUpdatedAt?: string | null;
   createdAt: string;
 };
 
@@ -32,10 +37,15 @@ function mapApiBooking(b: ApiBooking): Booking {
     endDate: new Date(b.endDate),
     pickupTime: b.pickupTime,
     totalPrice: b.totalPrice,
-    status: b.status as Booking['status'],
+    status: (b.status as string).toLowerCase() as Booking['status'],
     pickupLocation: b.pickupLocation,
     dropoffLocation: b.dropoffLocation,
     notes: b.notes,
+    pickedUpAt: b.pickedUpAt ? new Date(b.pickedUpAt) : undefined,
+    returnedAt: b.returnedAt ? new Date(b.returnedAt) : undefined,
+    renterLat: b.renterLat ?? undefined,
+    renterLng: b.renterLng ?? undefined,
+    renterLocUpdatedAt: b.renterLocUpdatedAt ? new Date(b.renterLocUpdatedAt) : undefined,
     createdAt: new Date(b.createdAt),
   };
 }

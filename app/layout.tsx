@@ -5,6 +5,7 @@ import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin'
 import { extractRouterConfig } from 'uploadthing/server'
 import { AppProvider } from '@/lib/context'
 import { AuthSessionProvider } from '@/components/session-provider'
+import { Toaster } from '@/components/ui/sonner'
 import { ourFileRouter } from '@/lib/uploadthing'
 import './globals.css'
 
@@ -56,6 +57,7 @@ export default function RootLayout({
             {children}
           </AppProvider>
         </AuthSessionProvider>
+        <Toaster position="top-right" richColors closeButton />
         <Analytics />
       </body>
     </html>

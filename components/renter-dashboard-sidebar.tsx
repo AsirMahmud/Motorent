@@ -3,14 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  ClipboardCheck,
-  Users,
-  Bike,
-  UserCircle,
-  MessageSquare,
-} from 'lucide-react';
+import { LayoutDashboard, MapPin, Car, Bike } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const links: {
@@ -19,14 +12,12 @@ const links: {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   exact?: boolean;
 }[] = [
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
-  { href: '/admin/owners', label: 'Owners', icon: Users },
-  { href: '/admin/renters', label: 'Renters', icon: UserCircle },
-  { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/renter-dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/home', label: 'Explore', icon: MapPin },
+  { href: '/browse', label: 'Browse', icon: Car },
 ];
 
-export function AdminSidebar() {
+export function RenterDashboardSidebar() {
   const pathname = usePathname();
 
   const isActive = (href: string, exact?: boolean) => {
@@ -42,7 +33,7 @@ export function AdminSidebar() {
             <Bike className="h-4 w-4" strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Console</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Renter</p>
             <p className="truncate text-sm font-semibold leading-tight">MotoRent</p>
           </div>
         </div>

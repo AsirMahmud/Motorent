@@ -142,7 +142,7 @@ export default function BookingConfirmationPage() {
               <Button
                 variant="outline"
                 className="h-16 rounded-2xl font-bold border-2 text-lg flex items-center justify-center gap-3 hover:bg-muted"
-                onClick={() => router.push('/messages')}
+                onClick={() => router.push('/renter-dashboard')}
               >
                 <MessageSquare className="w-5 h-5 text-primary" /> Chat with Owner
               </Button>
@@ -236,7 +236,7 @@ export default function BookingConfirmationPage() {
             <Button
               variant="outline"
               className="h-16 rounded-2xl font-bold border-2 text-lg flex items-center justify-center gap-3 hover:bg-muted"
-              onClick={() => router.push('/messages')}
+              onClick={() => router.push('/renter-dashboard')}
             >
               <MessageSquare className="w-5 h-5 text-primary" /> Chat with Owner
             </Button>

@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { CheckCircle2, DollarSign, ArrowLeft, Bike, Car, MapPin } from 'lucide-react';
 import { useApp } from '@/lib/context';
+import { DashboardPageHeader } from '@/components/dashboard-page-header';
 
 type DocKey = 'photo' | 'ownership' | 'insurance';
 
@@ -131,7 +132,7 @@ export function OwnerAddVehicleForm() {
   if (!currentUser || currentUser.role !== 'owner') {
     return (
       <div className="flex flex-1 items-center justify-center p-4 py-16">
-        <Card className="w-full max-w-md p-10 text-center rounded-3xl shadow-2xl border-none">
+        <Card className="w-full max-w-md rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
           <div className="flex justify-center mb-4">
             <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden />
           </div>
@@ -143,16 +144,20 @@ export function OwnerAddVehicleForm() {
 
   if (done) {
     return (
-      <div className="flex flex-1 flex-col bg-gradient-to-br from-primary/5 via-background to-primary/10 font-sans">
-        <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md p-10 text-center rounded-3xl shadow-2xl border-none">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="flex flex-1 flex-col font-sans">
+        <div className="flex flex-1 items-center justify-center p-4">
+          <Card className="w-full max-w-md rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
               <CheckCircle2 className="text-green-500" size={40} />
             </div>
-            <h2 className="text-3xl font-black mb-2">Vehicle Submitted!</h2>
-            <p className="text-muted-foreground mb-6">Your vehicle profile is pending admin document review.</p>
-            <Button variant="outline" className="w-full rounded-xl h-12 font-black" onClick={() => router.push('/owner-dashboard')}>
-              Dashboard
+            <h2 className="mb-2 text-2xl font-semibold">Vehicle submitted</h2>
+            <p className="mb-6 text-muted-foreground">Your vehicle profile is pending admin document review.</p>
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-lg font-medium"
+              onClick={() => router.push('/owner-dashboard')}
+            >
+              Back to dashboard
             </Button>
           </Card>
         </div>
@@ -161,21 +166,29 @@ export function OwnerAddVehicleForm() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-gradient-to-br from-primary/5 via-background to-primary/10 font-sans">
-      <div className="flex-1 flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-xl">
-          <Card className="p-6 sm:p-8 rounded-3xl shadow-2xl border-none">
+    <div className="flex flex-1 flex-col font-sans">
+      <div className="flex flex-1 items-center justify-center px-4 py-8">
+        <div className="w-full max-w-xl space-y-6">
+          <DashboardPageHeader
+            eyebrow="Owner hub"
+            title="List a vehicle"
+            description="Add details and documents. Your listing stays pending until an admin approves it."
+          />
+          <Card className="rounded-xl border border-border/60 bg-card p-6 shadow-sm sm:p-8">
             <div className="space-y-6">
               <button
+                type="button"
                 onClick={() => router.back()}
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-bold mb-2 transition-colors"
+                className="mb-2 flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ArrowLeft size={15} /> Back
               </button>
 
               <div>
-                <h2 className="text-2xl font-black mb-1">Create Vehicle Profile</h2>
-                <p className="text-muted-foreground text-sm">Pick files on your device first, then upload each to the cloud.</p>
+                <h2 className="mb-1 text-lg font-semibold tracking-tight">Vehicle details</h2>
+                <p className="text-sm text-muted-foreground">
+                  Pick files on your device first, then upload each to the cloud.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -379,7 +392,7 @@ export function OwnerAddVehicleForm() {
 
               {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
               <Button
-                className="w-full h-12 rounded-xl font-black shadow-xl shadow-primary/20"
+                className="h-12 w-full rounded-lg font-medium shadow-sm"
                 disabled={submitting || uploadBusy}
                 onClick={handleSubmit}
               >
