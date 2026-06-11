@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import { Montserrat } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Familjen_Grotesk, Manrope } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin'
 import { extractRouterConfig } from 'uploadthing/server'
@@ -9,21 +9,19 @@ import { Toaster } from '@/components/ui/sonner'
 import { ourFileRouter } from '@/lib/uploadthing'
 import './globals.css'
 
-const montserrat = Montserrat({ 
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-montserrat'
+  variable: '--font-manrope'
+});
+
+const familjenGrotesk = Familjen_Grotesk({
+  subsets: ["latin"],
+  variable: '--font-familjen'
 });
 
 export const metadata: Metadata = {
-  title: 'VroomHub - Vehicle Rental Platform',
-  description: 'Book and manage vehicle rentals seamlessly. Rent from trusted owners or list your vehicles.',
-  generator: 'v0.app',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
+  title: 'MotoRent - Rent any vehicle. Move freely.',
+  description: 'Rent verified bikes and cars across Bangladesh or list your vehicles and grow your rental business.',
   icons: {
     icon: [
       {
@@ -43,13 +41,19 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={montserrat.variable}>
+    <html lang="en" className={`${manrope.variable} ${familjenGrotesk.variable}`}>
       <body className="font-sans antialiased">
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <AuthSessionProvider>

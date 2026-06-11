@@ -120,8 +120,8 @@ export default function VehicleDetailPage() {
             <p className="text-muted-foreground mb-6">
               This vehicle is no longer available.
             </p>
-            <Button onClick={() => router.push('/')} className="rounded-xl px-8">
-              Back to Home
+            <Button onClick={() => router.push('/browse')} className="rounded-xl px-8">
+              Back to browse
             </Button>
           </Card>
         </div>

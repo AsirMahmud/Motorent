@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp } from '@/lib/context';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Bike, Menu, X, MessageSquare, LayoutDashboard, LogOut,
+  Menu, X, MessageSquare, LayoutDashboard, LogOut,
   MapPin, Calendar, Car, ChevronDown,
   PlusCircle, Home, ClipboardCheck, Users, UserCircle,
 } from 'lucide-react';
@@ -92,19 +93,18 @@ export function Header({ forcedRole }: HeaderProps) {
   const accountFirstWord = accountName.split(/\s+/)[0] || accountName;
 
   return (
-    <header className="bg-white/95 backdrop-blur-lg border-b border-border sticky top-0 z-50 font-sans shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 border-b border-primary/10 bg-white/90 font-sans shadow-[0_4px_24px_rgba(6,62,86,0.04)] backdrop-blur-xl">
+      <div className="mx-auto flex h-[4.5rem] max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-7">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group transition-all duration-300 shrink-0">
-          <div className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
-            <Bike size={20} />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-black text-xl uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
-              MotoRent
-            </span>
-            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground -mt-0.5">Bangladesh</span>
-          </div>
+        <Link href="/" className="group shrink-0 rounded-xl bg-primary px-3 py-1.5 shadow-sm transition hover:-translate-y-0.5">
+          <Image
+            src="/White & Light Green Logo EN.svg"
+            alt="MotoRent"
+            width={148}
+            height={46}
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -115,7 +115,7 @@ export function Header({ forcedRole }: HeaderProps) {
                 key={link.href + link.label}
                 href={link.href}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-                  navItemIsActive(link) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  navItemIsActive(link) ? 'bg-secondary/12 text-primary' : 'text-muted-foreground hover:text-primary hover:bg-muted'
                 }`}
               >
                 <link.icon size={15} />
@@ -127,11 +127,14 @@ export function Header({ forcedRole }: HeaderProps) {
 
         {showGuestChrome && (
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            <Link href="/home" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/home') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
-              <MapPin size={15} /> Explore
+            <Link href="/browse" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/browse') ? 'bg-secondary/12 text-primary' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
+              <Car size={15} /> Browse vehicles
             </Link>
-            <Link href="/browse" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/browse') ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
-              <Car size={15} /> Browse
+            <Link href="/#how-it-works" className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground transition-all hover:bg-muted hover:text-primary">
+              <MapPin size={15} /> How it works
+            </Link>
+            <Link href="/#partners" className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground transition-all hover:bg-muted hover:text-primary">
+              <PlusCircle size={15} /> List your vehicle
             </Link>
           </nav>
         )}
@@ -203,8 +206,8 @@ export function Header({ forcedRole }: HeaderProps) {
                 Sign In
               </Button>
               <Button
-                className="h-9 px-5 rounded-xl font-black text-xs shadow-lg shadow-primary/20"
-                onClick={() => router.push('/signup')}
+                className="h-10 rounded-full bg-secondary px-5 text-xs font-black text-secondary-foreground shadow-lg shadow-secondary/20 hover:bg-secondary/90"
+                onClick={() => router.push('/login/renter')}
               >
                 Join Free
               </Button>
@@ -250,7 +253,7 @@ export function Header({ forcedRole }: HeaderProps) {
                   key={link.href + link.label}
                   href={link.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
-                    navItemIsActive(link) ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
+                      navItemIsActive(link) ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -271,15 +274,18 @@ export function Header({ forcedRole }: HeaderProps) {
             </>
           ) : showGuestChrome ? (
             <>
-              <Link href="/home" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                <MapPin size={18} /> Explore
-              </Link>
               <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 <Car size={18} /> Browse Vehicles
               </Link>
+              <Link href="/#how-it-works" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+                <MapPin size={18} /> How it works
+              </Link>
+              <Link href="/#partners" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+                <PlusCircle size={18} /> List your vehicle
+              </Link>
               <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
                 <Button variant="outline" className="h-12 rounded-xl font-black" onClick={() => { router.push('/login'); setMobileMenuOpen(false); }}>Sign In</Button>
-                <Button className="h-12 rounded-xl font-black shadow-xl" onClick={() => { router.push('/signup'); setMobileMenuOpen(false); }}>Join Free</Button>
+                <Button className="h-12 rounded-xl font-black shadow-xl" onClick={() => { router.push('/login/renter'); setMobileMenuOpen(false); }}>Join Free</Button>
               </div>
             </>
           ) : (

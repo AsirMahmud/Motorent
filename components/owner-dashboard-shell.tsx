@@ -5,7 +5,7 @@ import { OwnerDashboardSidebar } from '@/components/owner-dashboard-sidebar';
 
 export function OwnerDashboardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40 font-sans antialiased">
+    <div className="flex min-h-screen flex-col bg-muted font-sans antialiased">
       <Header forcedRole="owner" />
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)]">
         <OwnerDashboardSidebar />

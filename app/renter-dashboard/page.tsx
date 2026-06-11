@@ -291,7 +291,7 @@ export default function RenterDashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button onClick={() => router.push('/')} className="h-12 w-full rounded-lg font-medium shadow-sm">
+              <Button onClick={() => router.push('/browse')} className="h-12 w-full rounded-lg font-medium shadow-sm">
                 Browse vehicles
               </Button>
             </>
@@ -387,7 +387,7 @@ export default function RenterDashboardPage() {
                   Refresh
                 </Button>
                 <Button
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/home')}
                   size="sm"
                   className="h-9 gap-2 rounded-lg font-medium shadow-sm"
                 >
@@ -522,7 +522,7 @@ export default function RenterDashboardPage() {
                     <Calendar className="mx-auto mb-4 h-14 w-14 text-muted-foreground/25" />
                     <h3 className="mb-2 text-xl font-semibold">No bookings yet</h3>
                     <p className="mb-6 text-muted-foreground">Explore vehicles and make your first booking.</p>
-                    <Button onClick={() => router.push('/')} className="h-12 rounded-lg px-8 font-medium shadow-sm">
+                    <Button onClick={() => router.push('/browse')} className="h-12 rounded-lg px-8 font-medium shadow-sm">
                       Explore now
                     </Button>
                   </Card>

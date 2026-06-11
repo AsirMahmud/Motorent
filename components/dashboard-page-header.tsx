@@ -19,13 +19,13 @@ export function DashboardPageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between',
+        'flex flex-col gap-4 border-b border-primary/10 pb-6 sm:flex-row sm:items-end sm:justify-between',
         className
       )}
     >
       <div className="min-w-0 space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{eyebrow}</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{title}</h1>
+        <p className="brand-eyebrow text-[11px]">{eyebrow}</p>
+        <h1 className="font-display text-3xl font-medium tracking-[-0.03em] text-primary md:text-4xl">{title}</h1>
         {description ? (
           <p className="max-w-2xl pt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}

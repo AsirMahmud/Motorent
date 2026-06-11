@@ -32,7 +32,7 @@ export function MobileExplorerTabBar() {
       : '/messages';
 
   const items: { key: ItemKey; label: string; icon: LucideIcon; href: string }[] = [
-    { key: 'explore', label: 'Explore', icon: MapPin, href: '/' },
+    { key: 'explore', label: 'Explore', icon: MapPin, href: '/home' },
     { key: 'browse', label: 'Browse', icon: Search, href: '/browse' },
     {
       key: 'trips',
@@ -48,7 +48,7 @@ export function MobileExplorerTabBar() {
       ? 'messages'
       : pathname.startsWith('/browse')
         ? 'browse'
-        : pathname === '/' || pathname === '/home'
+        : pathname === '/home'
           ? 'explore'
           : 'trips';
 

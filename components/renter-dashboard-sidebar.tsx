@@ -26,14 +26,14 @@ export function RenterDashboardSidebar() {
   };
 
   return (
-    <aside className="flex w-full min-w-0 flex-col border-b border-border bg-card md:border-b-0 md:border-r md:sticky md:top-16 md:max-h-[calc(100vh-4rem)] md:self-start md:overflow-y-auto">
+    <aside className="flex w-full min-w-0 flex-col border-b border-white/10 bg-primary text-white md:sticky md:top-[4.5rem] md:max-h-[calc(100vh-4.5rem)] md:self-start md:overflow-y-auto md:border-b-0 md:border-r-0">
       <div className="flex flex-col gap-1 px-3 py-4 md:py-5">
-        <div className="mb-3 flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+        <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground shadow-sm">
             <Bike className="h-4 w-4" strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Renter</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Renter</p>
             <p className="truncate text-sm font-semibold leading-tight">MotoRent</p>
           </div>
         </div>
@@ -43,10 +43,10 @@ export function RenterDashboardSidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors md:py-2.5',
+                'flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors md:py-2.5',
                 isActive(href, exact)
-                  ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15'
-                  : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                  ? 'bg-secondary text-secondary-foreground shadow-sm'
+                  : 'text-white/65 hover:bg-white/10 hover:text-white'
               )}
             >
               <Icon className="h-4 w-4 shrink-0 opacity-90" strokeWidth={2} />

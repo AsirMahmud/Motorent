@@ -5,39 +5,39 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: #ffffff;
+  --foreground: #0f172a;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: #0f172a;
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #ED6140;
+  --primary: #063E56;
   --primary-foreground: #FFFFFF;
-  --secondary: #297B87;
-  --secondary-foreground: #FFFFFF;
-  --muted: oklch(0.92 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: #297B87;
-  --accent-foreground: #FFFFFF;
+  --secondary: #05C96A;
+  --secondary-foreground: #022B14;
+  --muted: #F4F4F4;
+  --muted-foreground: #667085;
+  --accent: #E8F8EF;
+  --accent-foreground: #063E56;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.96 0 0);
-  --ring: #ED6140;
-  --chart-1: #ED6140;
-  --chart-2: #297B87;
+  --border: #DCE6E9;
+  --input: #EFF3F4;
+  --ring: #05C96A;
+  --chart-1: #05C96A;
+  --chart-2: #063E56;
   --chart-3: oklch(0.5 0.15 180);
   --chart-4: oklch(0.7 0.1 60);
   --chart-5: oklch(0.4 0.12 280);
-  --radius: 1rem;
-  --sidebar: #297B87;
+  --radius: 1.125rem;
+  --sidebar: #063E56;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #ED6140;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: oklch(0.96 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
-  --sidebar-border: oklch(0.5 0.05 253.6);
-  --sidebar-ring: #ED6140;
+  --sidebar-primary: #05C96A;
+  --sidebar-primary-foreground: #022B14;
+  --sidebar-accent: rgba(255,255,255,.1);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255,255,255,.12);
+  --sidebar-ring: #05C96A;
 }
 
 .dark {
@@ -76,7 +76,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-montserrat), 'Geist', 'Geist Fallback';
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-familjen), var(--font-manrope), system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -119,11 +120,49 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    font-family: var(--font-montserrat), sans-serif;
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-montserrat), sans-serif;
+    font-family: var(--font-manrope), sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-familjen), var(--font-manrope), sans-serif;
+  }
+  ::selection {
+    background: rgba(5, 201, 106, .2);
+    color: #063E56;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-familjen), var(--font-manrope), sans-serif;
+  }
+  .brand-button {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold transition duration-200;
+  }
+  .brand-button-primary {
+    @apply bg-secondary text-secondary-foreground shadow-[0_10px_24px_rgba(5,201,106,0.24)] hover:-translate-y-0.5 hover:bg-[#04b85f];
+  }
+  .brand-button-outline {
+    @apply border border-primary/15 bg-white text-primary hover:-translate-y-0.5 hover:border-primary/35;
+  }
+  .brand-eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-secondary;
+  }
+  .brand-eyebrow::before {
+    content: "";
+    @apply h-2 w-2 rounded-full bg-secondary;
+  }
+  .brand-heading {
+    @apply font-display text-4xl font-medium leading-[1.03] tracking-[-0.035em] text-primary sm:text-5xl;
+  }
+  .brand-heading span {
+    @apply text-secondary;
+  }
+  .brand-card {
+    @apply rounded-[1.75rem] border border-primary/10 bg-white shadow-[0_14px_40px_rgba(6,62,86,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(6,62,86,0.12)];
   }
 }
 
