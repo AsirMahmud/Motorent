@@ -504,7 +504,7 @@ export default function VehicleDetailPage() {
             <p className="text-sm opacity-60 font-medium">The future of vehicle rentals in the palm of your hand.</p>
           </div>
           <div className="text-center md:text-right text-sm opacity-60">
-            <p>&copy; 2024 Moto-Rent. All rights reserved.</p>
+            <p>&copy; 2026 MotoRent. All rights reserved.</p>
           </div>
         </div>
       </footer>

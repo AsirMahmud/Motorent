@@ -8,7 +8,9 @@ import {
   Car,
   Check,
   Clock3,
+  Mail,
   MapPin,
+  Phone,
   Search,
   ShieldCheck,
   Sparkles,
@@ -109,7 +111,7 @@ export default async function HomePage() {
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-white px-4 py-2 text-xs font-bold text-primary shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-secondary" />
-                Bangladesh&apos;s vehicle rental marketplace
+                Bangladesh&apos;s First Vehicle Rental Marketplace
               </div>
               <h1 className="font-display text-5xl font-medium leading-[0.98] tracking-[-0.045em] text-primary sm:text-6xl lg:text-[5rem]">
                 Rent any vehicle.
@@ -191,6 +193,23 @@ export default async function HomePage() {
                 <span className="flex items-center gap-2 text-sm font-bold text-primary"><span className="h-2.5 w-2.5 rounded-full bg-secondary" /> Verified listing</span>
                 <small className="mt-1 block text-muted-foreground">Documents reviewed</small>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-5 pb-8 sm:px-7">
+          <div className="mx-auto grid max-w-[1240px] overflow-hidden rounded-[2rem] shadow-[0_20px_55px_rgba(6,62,86,0.12)] md:grid-cols-2">
+            <div className="bg-primary p-9 text-white sm:p-12">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-secondary">For renters</p>
+              <h2 className="font-display mt-5 text-4xl font-medium">Your next ride is nearby.</h2>
+              <p className="mt-4 max-w-md leading-7 text-white/65">Browse verified vehicles and book in minutes.</p>
+              <Link href="/browse" className="brand-button mt-8 bg-white text-primary hover:-translate-y-0.5">Rent a vehicle <ArrowRight className="h-4 w-4" /></Link>
+            </div>
+            <div className="bg-secondary p-9 text-[#022b14] sm:p-12">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">For partners</p>
+              <h2 className="font-display mt-5 text-4xl font-medium">Put your fleet to work.</h2>
+              <p className="mt-4 max-w-md leading-7 text-primary/75">Join the marketplace and grow with better fleet tools.</p>
+              <Link href="/signup" className="brand-button mt-8 bg-primary text-white hover:-translate-y-0.5">Become a partner <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </div>
         </section>
@@ -360,22 +379,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="px-5 pb-20 sm:px-7 lg:pb-28">
-          <div className="mx-auto grid max-w-[1240px] overflow-hidden rounded-[2rem] md:grid-cols-2">
-            <div className="bg-primary p-9 text-white sm:p-12">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-secondary">For renters</p>
-              <h2 className="font-display mt-5 text-4xl font-medium">Your next ride is nearby.</h2>
-              <p className="mt-4 max-w-md leading-7 text-white/65">Browse verified vehicles and book in minutes.</p>
-              <Link href="/browse" className="brand-button mt-8 bg-white text-primary hover:-translate-y-0.5">Rent a vehicle <ArrowRight className="h-4 w-4" /></Link>
-            </div>
-            <div className="bg-secondary p-9 text-[#022b14] sm:p-12">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">For partners</p>
-              <h2 className="font-display mt-5 text-4xl font-medium">Put your fleet to work.</h2>
-              <p className="mt-4 max-w-md leading-7 text-primary/75">Join the marketplace and grow with better fleet tools.</p>
-              <Link href="/signup" className="brand-button mt-8 bg-primary text-white hover:-translate-y-0.5">Become a partner <ArrowRight className="h-4 w-4" /></Link>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="bg-[#042f42] py-12 text-white">
@@ -389,7 +392,12 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 gap-x-12 gap-y-5 text-sm sm:grid-cols-3">
             <div><p className="mb-4 font-bold text-secondary">Rent</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/browse">Browse vehicles</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/home">Explore map</Link></div>
             <div><p className="mb-4 font-bold text-secondary">Partner</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/signup">List a vehicle</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/login/owner">Owner login</Link></div>
-            <div><p className="mb-4 font-bold text-secondary">Account</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/login">Sign in</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/kyc">Verification</Link></div>
+            <div>
+              <p className="mb-4 font-bold text-secondary">Contact</p>
+              <a className="flex items-center gap-2 py-1.5 text-white/60 hover:text-white" href="mailto:support@motorent.com"><Mail className="h-3.5 w-3.5" /> support@motorent.com</a>
+              <a className="flex items-center gap-2 py-1.5 text-white/60 hover:text-white" href="tel:+8801800000000"><Phone className="h-3.5 w-3.5" /> +880 1800-000000</a>
+              <p className="flex items-center gap-2 py-1.5 text-white/60"><MapPin className="h-3.5 w-3.5" /> Dhaka, Bangladesh</p>
+            </div>
           </div>
         </div>
         <div className="mx-auto mt-10 max-w-[1240px] border-t border-white/10 px-5 pt-7 text-xs text-white/40 sm:px-7">© 2026 MotoRent. All rights reserved.</div>

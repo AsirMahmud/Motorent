@@ -16,7 +16,7 @@ import {
 import {
   Menu, X, MessageSquare, LayoutDashboard, LogOut,
   MapPin, Calendar, Car, ChevronDown,
-  PlusCircle, Home, ClipboardCheck, Users, UserCircle,
+  PlusCircle, Home, ClipboardCheck, Users, UserCircle, ShieldCheck,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { UserRole } from '@/lib/types';
@@ -148,6 +148,17 @@ export function Header({ forcedRole }: HeaderProps) {
             <div className="flex items-center gap-2">
               {/* Notification Bell */}
               <NotificationBell />
+
+              {effectiveRole === 'renter' && (
+                <Link
+                  href="/kyc"
+                  aria-label="Identity verification"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-primary/10 bg-muted/50 px-2.5 text-xs font-bold text-primary transition-colors hover:bg-muted"
+                >
+                  <ShieldCheck size={16} />
+                  <span className="hidden lg:inline">Verification</span>
+                </Link>
+              )}
 
               {/* User Dropdown */}
               <DropdownMenu>

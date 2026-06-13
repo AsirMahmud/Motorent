@@ -13,7 +13,7 @@ export default function RenterLoginPage() {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    await signIn('google', { callbackUrl: '/' });
+    await signIn('google', { callbackUrl: '/renter-dashboard' });
   };
 
   return (
