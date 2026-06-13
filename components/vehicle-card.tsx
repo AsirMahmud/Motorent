@@ -48,7 +48,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         <div className="flex-1 p-6 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-black text-xl uppercase italic tracking-tighter group-hover:text-primary transition-colors">
+              <h3 className="font-display text-xl font-medium tracking-[-0.02em] group-hover:text-primary transition-colors">
                 {vehicle.brand} {vehicle.model}
               </h3>
               <span className="text-xs font-black text-muted-foreground/40">{vehicle.year}</span>
@@ -81,7 +81,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
             <div className="flex flex-col">
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Daily Rate</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black italic text-primary">
+                <span className="font-display text-2xl font-semibold text-primary">
                   ৳{vehicle.priceDaily.toLocaleString()}
                 </span>
               </div>

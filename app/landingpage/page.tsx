@@ -80,7 +80,7 @@ export default function LandingPage() {
                   The Future of Mobility
                 </Badge>
                 <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-8">
-                  Ride the <span className="text-primary italic">Extraordinary.</span>
+                  Ride the <span className="text-primary">Extraordinary.</span>
                 </h1>
                 <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
                   Experience the ultimate freedom of movement. From high-performance bikes to luxury SUVs, find the perfect ride for every journey.
@@ -202,7 +202,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
               <div className="text-left">
-                <h2 className="text-3xl lg:text-5xl font-black mb-4 tracking-tight">Browse by <span className="text-primary italic">Category.</span></h2>
+                <h2 className="text-3xl lg:text-5xl font-black mb-4 tracking-tight">Browse by <span className="text-primary">Category.</span></h2>
                 <p className="text-lg text-slate-600 max-w-xl font-medium">Choose from our curated selection of high-quality vehicles.</p>
               </div>
               <Button 
@@ -311,7 +311,7 @@ export default function LandingPage() {
                   <div className="flex gap-1 text-amber-500 mb-6">
                     {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill="currentColor" />)}
                   </div>
-                  <p className="text-lg font-medium italic mb-8 leading-relaxed opacity-90">"{t.text}"</p>
+                  <p className="text-lg font-medium mb-8 leading-relaxed opacity-90">"{t.text}"</p>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
                       <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${t.name}`} alt={t.name} width={48} height={48} />
@@ -333,7 +333,7 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div>
                 <Badge className="mb-6 bg-green-500 text-white font-black uppercase tracking-widest px-4 py-1.5 rounded-full">Safety First</Badge>
-                <h2 className="text-4xl lg:text-6xl font-black mb-8 leading-tight tracking-tight">Your Protection is Our <span className="text-primary italic">Priority.</span></h2>
+                <h2 className="text-4xl lg:text-6xl font-black mb-8 leading-tight tracking-tight">Your Protection is Our <span className="text-primary">Priority.</span></h2>
                 <div className="space-y-8">
                   <div className="flex gap-6">
                     <div className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-primary shrink-0">
@@ -410,7 +410,7 @@ export default function LandingPage() {
             <div className="bg-primary rounded-[50px] p-12 lg:p-24 text-center text-white relative shadow-2xl overflow-hidden">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
               <div className="relative z-10">
-                <h2 className="text-4xl lg:text-7xl font-black mb-8 leading-tight tracking-tighter">Ready to Hit the <br /> <span className="italic underline decoration-white/20">Open Road?</span></h2>
+                <h2 className="text-4xl lg:text-7xl font-black mb-8 leading-tight tracking-tighter">Ready to Hit the <br /> <span className="underline decoration-white/20">Open Road?</span></h2>
                 <p className="text-xl lg:text-2xl mb-12 max-w-2xl mx-auto font-medium opacity-90">
                   Join thousands of riders and vehicle owners in Bangladesh's premier vehicle sharing community.
                 </p>
@@ -448,7 +448,7 @@ export default function LandingPage() {
                   <Bike size={24} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-black text-2xl uppercase italic tracking-tighter leading-none">MotoRent</span>
+                  <span className="font-display text-2xl font-medium tracking-[-0.03em] leading-none">MotoRent</span>
                   <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mt-0.5">Bangladesh</span>
                 </div>
               </Link>

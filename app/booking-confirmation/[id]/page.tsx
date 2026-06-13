@@ -100,7 +100,7 @@ export default function BookingConfirmationPage() {
               <CheckCircle2 className="w-12 h-12 text-green-600 animate-bounce" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">Request Sent!</h1>
+              <h1 className="font-display text-4xl font-medium tracking-[-0.035em] text-primary md:text-5xl">Request sent!</h1>
               <p className="text-muted-foreground text-lg font-medium">Your booking request is being reviewed by the owner.</p>
             </div>
             <div className="bg-muted/30 p-6 rounded-3xl border-2 border-dashed border-border flex flex-col md:flex-row gap-6 text-left items-center md:items-stretch">
@@ -135,7 +135,7 @@ export default function BookingConfirmationPage() {
               </div>
               <div className="flex flex-col justify-center items-center md:items-end md:pl-6 md:border-l border-border/50">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Total</p>
-                <span className="text-3xl font-black text-primary italic">৳{b.totalPrice.toLocaleString()}</span>
+                <span className="font-display text-3xl font-semibold text-primary">৳{b.totalPrice.toLocaleString()}</span>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4 pt-4">
@@ -189,7 +189,7 @@ export default function BookingConfirmationPage() {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
+            <h1 className="font-display text-4xl font-medium tracking-[-0.035em] text-primary md:text-5xl">
               Request Sent!
             </h1>
             <p className="text-muted-foreground text-lg font-medium">
@@ -228,7 +228,7 @@ export default function BookingConfirmationPage() {
             </div>
             <div className="flex flex-col justify-center items-center md:items-end md:pl-6 md:border-l border-border/50">
               <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Total Fee</p>
-              <span className="text-3xl font-black text-primary italic">৳{booking.totalPrice}</span>
+              <span className="font-display text-3xl font-semibold text-primary">৳{booking.totalPrice}</span>
             </div>
           </div>
 

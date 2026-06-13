@@ -25,7 +25,7 @@ export default function RenterLoginPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-2xl shadow-primary/30 mb-4">
               <Bike className="text-white" size={30} />
             </div>
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter">Renter sign in</h1>
+            <h1 className="font-display text-4xl font-medium tracking-[-0.03em] text-primary">Renter sign in</h1>
             <p className="text-muted-foreground mt-1 text-sm">Browse and book vehicles instantly</p>
           </div>
 

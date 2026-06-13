@@ -149,7 +149,7 @@ export function MapView({
               border-radius:12px;padding:5px 8px;
               box-shadow:0 2px 8px rgba(0,0,0,0.18);
               display:flex;align-items:center;gap:4px;
-              font-family:Montserrat,sans-serif;font-weight:800;
+              font-family:var(--font-manrope),sans-serif;font-weight:700;
               font-size:11px;color:${text};white-space:nowrap;
               transition:all .2s;
               ${isSelected ? 'transform:scale(1.15);' : ''}

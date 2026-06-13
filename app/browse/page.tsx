@@ -71,7 +71,7 @@ export default function BrowsePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-black italic uppercase tracking-tighter">Browse Vehicles</h1>
+              <h1 className="font-display text-3xl font-medium tracking-[-0.03em] text-primary">Browse vehicles</h1>
               <p className="text-muted-foreground text-sm">{filteredVehicles.length} vehicles available near you</p>
             </div>
             <div className="flex items-center gap-2">

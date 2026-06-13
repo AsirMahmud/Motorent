@@ -128,6 +128,14 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-familjen), var(--font-manrope), sans-serif;
+    font-style: normal;
+  }
+  h5, h6 {
+    font-family: var(--font-familjen), var(--font-manrope), sans-serif;
+    font-style: normal;
+  }
+  em {
+    font-style: normal;
   }
   ::selection {
     background: rgba(5, 201, 106, .2);

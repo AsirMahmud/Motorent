@@ -15,7 +15,7 @@ export default function OwnerLoginPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-2xl shadow-primary/30 mb-4">
               <Car className="text-white" size={30} />
             </div>
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter">Owner sign in</h1>
+            <h1 className="font-display text-4xl font-medium tracking-[-0.03em] text-primary">Owner sign in</h1>
             <p className="text-muted-foreground mt-1">List vehicles after admin approval</p>
           </div>
 

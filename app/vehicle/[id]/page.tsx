@@ -223,7 +223,7 @@ export default function VehicleDetailPage() {
                       <div className="h-1 w-1 bg-muted-foreground rounded-full" />
                       <span className="text-sm text-muted-foreground">{vehicle.year} Model</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter">
+                    <h1 className="font-display text-4xl font-medium tracking-[-0.035em] text-primary md:text-5xl">
                       {vehicle.model}
                     </h1>
                     <div className="flex items-center gap-2 text-muted-foreground font-medium">
@@ -500,7 +500,7 @@ export default function VehicleDetailPage() {
       <footer className="bg-muted text-muted-foreground py-12 border-t mt-12">
         <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-black italic text-primary uppercase tracking-tighter mb-2">Moto-Rent</h2>
+            <h2 className="font-display mb-2 text-2xl font-medium tracking-[-0.02em] text-primary">MotoRent</h2>
             <p className="text-sm opacity-60 font-medium">The future of vehicle rentals in the palm of your hand.</p>
           </div>
           <div className="text-center md:text-right text-sm opacity-60">
