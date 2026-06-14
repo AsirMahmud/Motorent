@@ -9,6 +9,7 @@ import { useRef, useState } from 'react';
 import { CheckCircle2, ShieldCheck, FileCheck2, AlertCircle } from 'lucide-react';
 import { OwnerDocumentField } from '@/components/owner-document-field';
 import { mapApiUserToAppUser } from '@/lib/map-api-user';
+import { getSafeReturnPath } from '@/lib/booking-flow';
 
 export default function KYCPage() {
   const router = useRouter();
@@ -54,6 +55,10 @@ export default function KYCPage() {
   };
 
   const isResubmit = currentUser?.kycStatus === 'rejected';
+  const getReturnPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    return getSafeReturnPath(params.get('callbackUrl'), '/renter-dashboard');
+  };
 
   if (!currentUser) {
     return (
@@ -90,9 +95,9 @@ export default function KYCPage() {
             </div>
             <Button
               className="w-full h-12 rounded-2xl font-black"
-              onClick={() => router.push('/renter-dashboard')}
+              onClick={() => router.push(getReturnPath())}
             >
-              Back to Dashboard
+              Continue
             </Button>
           </Card>
         </div>

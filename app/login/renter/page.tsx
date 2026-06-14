@@ -7,13 +7,16 @@ import { Card } from '@/components/ui/card';
 import { AuthPageHeader } from '@/components/auth-page-header';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
+import { getSafeReturnPath } from '@/lib/booking-flow';
 
 export default function RenterLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    await signIn('google', { callbackUrl: '/renter-dashboard' });
+    const params = new URLSearchParams(window.location.search);
+    const callbackUrl = getSafeReturnPath(params.get('callbackUrl'), '/renter-dashboard');
+    await signIn('google', { callbackUrl });
   };
 
   return (

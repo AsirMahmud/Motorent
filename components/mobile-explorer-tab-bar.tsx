@@ -1,12 +1,12 @@
 'use client';
 
-import { MapPin, Search, MessageSquare, Calendar } from 'lucide-react';
+import { Search, MessageSquare, Calendar } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp } from '@/lib/context';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
-type ItemKey = 'explore' | 'browse' | 'trips' | 'messages';
+type ItemKey = 'browse' | 'trips' | 'messages';
 
 export function MobileExplorerTabBar() {
   const router = useRouter();
@@ -32,8 +32,7 @@ export function MobileExplorerTabBar() {
       : '/messages';
 
   const items: { key: ItemKey; label: string; icon: LucideIcon; href: string }[] = [
-    { key: 'explore', label: 'Explore', icon: MapPin, href: '/home' },
-    { key: 'browse', label: 'Browse', icon: Search, href: '/browse' },
+    { key: 'browse', label: 'Browse', icon: Search, href: '/browse?view=list' },
     {
       key: 'trips',
       label: currentUser?.role === 'owner' ? 'Dashboard' : 'Bookings',
@@ -46,11 +45,9 @@ export function MobileExplorerTabBar() {
   const activeKey: ItemKey =
     pathname === '/messages' || pathname.startsWith('/admin/messages')
       ? 'messages'
-      : pathname.startsWith('/browse')
+      : pathname.startsWith('/browse') || pathname === '/home'
         ? 'browse'
-        : pathname === '/home'
-          ? 'explore'
-          : 'trips';
+        : 'trips';
 
   return (
     <nav

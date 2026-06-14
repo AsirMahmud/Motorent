@@ -55,13 +55,13 @@ export default function LandingPage() {
       name: 'Premium Bikes',
       count: '240+ Available',
       image: '/hero-bike-v2.png',
-      link: '/browse?type=bike'
+      link: '/browse?view=list&type=bike'
     },
     {
       name: 'Luxury Cars',
       count: '120+ Available',
       image: '/category-car.png',
-      link: '/browse?type=car'
+      link: '/browse?view=list&type=car'
     }
   ];
 
@@ -89,7 +89,7 @@ export default function LandingPage() {
                   <Button 
                     size="lg" 
                     className="h-14 px-10 rounded-2xl text-base font-black shadow-2xl shadow-primary/20 hover:scale-105 transition-transform"
-                    onClick={() => router.push('/browse')}
+                    onClick={() => router.push('/browse?view=list')}
                   >
                     Explore Vehicles <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -208,7 +208,7 @@ export default function LandingPage() {
               <Button 
                 variant="ghost" 
                 className="text-primary font-black text-base hover:bg-primary/5 group"
-                onClick={() => router.push('/browse')}
+                onClick={() => router.push('/browse?view=list')}
               >
                 View All Vehicles <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
               </Button>
@@ -427,7 +427,7 @@ export default function LandingPage() {
                     size="lg" 
                     variant="outline"
                     className="h-16 px-10 rounded-2xl text-lg font-bold border-white/40 text-white hover:bg-white/10"
-                    onClick={() => router.push('/browse')}
+                    onClick={() => router.push('/browse?view=list')}
                   >
                     Browse Vehicles
                   </Button>
@@ -467,8 +467,8 @@ export default function LandingPage() {
             <div>
               <h5 className="font-black text-sm uppercase tracking-widest text-slate-900 mb-8">Platform</h5>
               <ul className="space-y-4 text-slate-500 font-bold text-sm">
-                <li><Link href="/browse" className="hover:text-primary transition-colors">Browse Vehicles</Link></li>
-                <li><Link href="/home" className="hover:text-primary transition-colors">Interactive Map</Link></li>
+                <li><Link href="/browse?view=list" className="hover:text-primary transition-colors">Browse Vehicles</Link></li>
+                <li><Link href="/browse?view=map" className="hover:text-primary transition-colors">Interactive Map</Link></li>
                 <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing Plans</Link></li>
                 <li><Link href="/insurance" className="hover:text-primary transition-colors">Insurance Policy</Link></li>
               </ul>

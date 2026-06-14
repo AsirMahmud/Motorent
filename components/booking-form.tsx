@@ -9,21 +9,29 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Clock, MapPin, Info } from 'lucide-react';
 import type { Booking } from '@/lib/types';
+import { getTodayDate } from '@/lib/booking-flow';
 
 interface BookingFormProps {
   vehicleId: string;
   onClose: () => void;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }
 
-export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
+export function BookingForm({
+  vehicleId,
+  onClose,
+  initialStartDate = '',
+  initialEndDate = '',
+}: BookingFormProps) {
   const router = useRouter();
   const { currentUser, vehicles, addBooking } = useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [apiDailyRate, setApiDailyRate] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
+    startDate: initialStartDate,
+    endDate: initialEndDate,
     pickupTime: '10:00',
     pickupLocation: '',
     notes: '',
@@ -48,6 +56,14 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
   useEffect(() => {
     loadPublicVehicle();
   }, [loadPublicVehicle]);
+
+  useEffect(() => {
+    setFormData((current) => ({
+      ...current,
+      startDate: initialStartDate,
+      endDate: initialEndDate,
+    }));
+  }, [initialStartDate, initialEndDate]);
 
   const pricePerDay =
     apiDailyRate != null ? apiDailyRate : mockVehicle != null ? mockVehicle.priceDaily : 0;
@@ -145,9 +161,16 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
           <Input
             id="startDate"
             type="date"
-            min={new Date().toISOString().split('T')[0]}
+            min={getTodayDate()}
             value={formData.startDate}
-            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+            onChange={(e) => {
+              const startDate = e.target.value;
+              setFormData({
+                ...formData,
+                startDate,
+                endDate: formData.endDate > startDate ? formData.endDate : '',
+              });
+            }}
             required
             className="h-12 rounded-xl border-2 focus:border-primary"
           />
@@ -160,7 +183,7 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
           <Input
             id="endDate"
             type="date"
-            min={formData.startDate || new Date().toISOString().split('T')[0]}
+            min={formData.startDate || getTodayDate()}
             value={formData.endDate}
             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
             required

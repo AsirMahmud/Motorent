@@ -123,7 +123,7 @@ export default async function HomePage() {
 
               <div className="mt-8 max-w-2xl rounded-[1.75rem] border border-primary/10 bg-white p-3 shadow-[0_24px_70px_rgba(6,62,86,0.14)]">
                 <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                  <Link href="/home" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
+                  <Link href="/browse?view=map" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
                       <MapPin className="h-5 w-5" />
                     </span>
@@ -132,7 +132,7 @@ export default async function HomePage() {
                       <span className="text-sm font-semibold text-primary">Vehicles around Dhaka</span>
                     </span>
                   </Link>
-                  <Link href="/browse#rental-dates" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
+                  <Link href="/browse?view=map#rental-dates" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 text-primary">
                       <CalendarDays className="h-5 w-5" />
                     </span>
@@ -142,7 +142,7 @@ export default async function HomePage() {
                     </span>
                   </Link>
                   <Link
-                    href="/browse"
+                    href="/browse?view=list"
                     aria-label="Search vehicles"
                     className="flex min-h-14 items-center justify-center rounded-2xl bg-secondary px-5 text-[#022b14] shadow-[0_10px_24px_rgba(5,201,106,0.28)] transition hover:-translate-y-0.5 hover:bg-[#04b85f]"
                   >
@@ -152,7 +152,7 @@ export default async function HomePage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/browse" className="brand-button brand-button-primary">
+                <Link href="/browse?view=list" className="brand-button brand-button-primary">
                   Browse vehicles <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link href="/signup" className="brand-button brand-button-outline">
@@ -203,7 +203,7 @@ export default async function HomePage() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-secondary">For renters</p>
               <h2 className="font-display mt-5 text-4xl font-medium">Your next ride is nearby.</h2>
               <p className="mt-4 max-w-md leading-7 text-white/65">Browse verified vehicles and book in minutes.</p>
-              <Link href="/browse" className="brand-button mt-8 bg-white text-primary hover:-translate-y-0.5">Rent a vehicle <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/browse?view=list" className="brand-button mt-8 bg-white text-primary hover:-translate-y-0.5">Rent a vehicle <ArrowRight className="h-4 w-4" /></Link>
             </div>
             <div className="bg-secondary p-9 text-[#022b14] sm:p-12">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">For partners</p>
@@ -252,12 +252,12 @@ export default async function HomePage() {
                 <p className="brand-eyebrow">Choose your ride</p>
                 <h2 className="brand-heading mt-4">A vehicle for <span>every plan.</span></h2>
               </div>
-              <Link href="/browse" className="brand-button brand-button-outline self-start">View all vehicles <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/browse?view=list" className="brand-button brand-button-outline self-start">View all vehicles <ArrowRight className="h-4 w-4" /></Link>
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
               {[
-                { name: 'Bikes & scooters', text: 'Quick commutes, weekend rides, and efficient city movement.', image: '/hero-bike-v2.png', icon: Bike, href: '/browse?type=bike' },
-                { name: 'Cars & SUVs', text: 'Comfortable family trips, business travel, and longer journeys.', image: '/category-car.png', icon: Car, href: '/browse?type=car' },
+                { name: 'Bikes & scooters', text: 'Quick commutes, weekend rides, and efficient city movement.', image: '/hero-bike-v2.png', icon: Bike, href: '/browse?view=list&type=bike' },
+                { name: 'Cars & SUVs', text: 'Comfortable family trips, business travel, and longer journeys.', image: '/category-car.png', icon: Car, href: '/browse?view=list&type=car' },
               ].map((category) => (
                 <Link key={category.name} href={category.href} className="group relative min-h-[390px] overflow-hidden rounded-[2rem] bg-primary shadow-[0_20px_55px_rgba(6,62,86,0.12)]">
                   <Image src={category.image} alt={category.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition duration-700 group-hover:scale-105" />
@@ -285,7 +285,7 @@ export default async function HomePage() {
                   <h2 className="brand-heading mt-4">Real vehicles from <span>MotoRent partners.</span></h2>
                   <p className="mt-4 text-muted-foreground">These approved listings are loaded directly from the MotoRent database.</p>
                 </div>
-                <Link href="/browse" className="brand-button brand-button-outline self-start">Browse all <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/browse?view=list" className="brand-button brand-button-outline self-start">Browse all <ArrowRight className="h-4 w-4" /></Link>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {featuredVehicles.map((vehicle) => {
@@ -390,7 +390,7 @@ export default async function HomePage() {
             <p className="mt-5 text-sm leading-7 text-white/55">Bangladesh&apos;s vehicle renting and fleet management platform. Move freely without the burden of ownership.</p>
           </div>
           <div className="grid grid-cols-2 gap-x-12 gap-y-5 text-sm sm:grid-cols-3">
-            <div><p className="mb-4 font-bold text-secondary">Rent</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/browse">Browse vehicles</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/home">Explore map</Link></div>
+            <div><p className="mb-4 font-bold text-secondary">Rent</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/browse?view=map">Browse map</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/browse?view=list">Vehicle listings</Link></div>
             <div><p className="mb-4 font-bold text-secondary">Partner</p><Link className="block py-1.5 text-white/60 hover:text-white" href="/signup">List a vehicle</Link><Link className="block py-1.5 text-white/60 hover:text-white" href="/login/owner">Owner login</Link></div>
             <div>
               <p className="mb-4 font-bold text-secondary">Contact</p>

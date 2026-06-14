@@ -28,6 +28,21 @@ function jitterCoords(
   return [lat + Math.sin(angle) * radius, lng + Math.cos(angle) * radius];
 }
 
+function createVehicleMarkerHtml(vehicle: Vehicle, isSelected: boolean) {
+  const vehicleIcon = vehicle.type === 'bike'
+    ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3" /><circle cx="18.5" cy="16.5" r="3" /><path d="M18.5 16.5L16 8.5M16 8.5L14 5.5M16 8.5h-2.5" /><path d="M5.5 16.5h3.5l3-5.5h4L18.5 16.5" /><path d="M6 13.5c1.5-2 4-2.5 6-1.5M7.5 11h3.5" /></svg>`
+    : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 15h3.5a2.5 2.5 0 0 1 4 0h5a2.5 2.5 0 0 1 4 0H22v-2.5c0-1.2-.8-2.2-2-2.5l-3.5-1.5-3.5-2.5H8L5 8.5c-1 .5-1.8 1.5-1.8 2.8V15z" /><circle cx="7.5" cy="15" r="2" /><circle cx="16.5" cy="15" r="2" /><path d="M8.5 7h4l2 2.5H6.5L8.5 7z" /></svg>`;
+
+  return `
+    <div class="motorent-marker ${isSelected ? 'is-selected' : ''} ${vehicle.type === 'bike' ? 'is-bike' : 'is-car'} ${vehicle.isAvailable ? '' : 'is-unavailable'}">
+      <span class="motorent-marker-icon">
+        ${vehicleIcon}
+      </span>
+      <span class="motorent-marker-price">&#2547;${vehicle.priceDaily.toLocaleString()}</span>
+      <span class="motorent-marker-tip"></span>
+    </div>`;
+}
+
 export function MapView({
   vehicles,
   onVehicleSelect,
@@ -65,13 +80,15 @@ export function MapView({
       const map = L.map(containerRef.current, {
         center: DHAKA_CENTER,
         zoom: DEFAULT_ZOOM,
-        zoomControl: true,
+        zoomControl: false,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 20,
       }).addTo(map);
+
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
 
       internalMapRef.current = map;
       if (externalMapRef) externalMapRef.current = map;
@@ -127,30 +144,10 @@ export function MapView({
         existingIds.delete(v.id);
         const isSelected = v.id === selectedVehicleId;
 
-        // MotoRent navy marks selection; green marks available vehicles.
-        const bg = isSelected ? '#063E56' : v.isAvailable ? '#ffffff' : '#d1d5db';
-        const border = isSelected ? '#ffffff' : v.isAvailable ? '#05C96A' : '#9ca3af';
-        const text = isSelected ? '#ffffff' : v.isAvailable ? '#063E56' : '#6b7280';
-
         const icon = L.divIcon({
-          className: '',
-          html: `
-            <div style="
-              background:${bg};border:2.5px solid ${border};
-              border-radius:12px;padding:5px 8px;
-              box-shadow:0 2px 8px rgba(0,0,0,0.18);
-              display:flex;align-items:center;gap:4px;
-              font-family:var(--font-manrope),sans-serif;font-weight:700;
-              font-size:11px;color:${text};white-space:nowrap;
-              transition:all .2s;
-              ${isSelected ? 'transform:scale(1.15);' : ''}
-            ">
-              ${v.type === 'bike'
-                ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>`
-                : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`
-              }
-              ৳${v.priceDaily.toLocaleString()}
-            </div>`,
+          className: 'motorent-marker-shell',
+          html: createVehicleMarkerHtml(v, isSelected),
+          iconSize: [0, 0],
           iconAnchor: [0, 0],
         });
 
@@ -292,7 +289,7 @@ export function MapView({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-0 bg-[linear-gradient(135deg,#e8f4f0_0%,#dde9f5_50%,#e5ede8_100%)]"
+      className="motorent-map absolute inset-0 z-0 bg-[linear-gradient(135deg,#e8f4f0_0%,#dde9f5_50%,#e5ede8_100%)]"
     />
   );
 }

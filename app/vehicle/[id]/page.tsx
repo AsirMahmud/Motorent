@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { Vehicle } from '@/lib/types';
 import { mapPublicVehicleApiToVehicle, type PublicVehicleApi } from '@/lib/map-public-vehicle';
+import { getSafeReturnPath, getValidDateRange } from '@/lib/booking-flow';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -28,6 +29,21 @@ export default function VehicleDetailPage() {
   const [ownerDisplayName, setOwnerDisplayName] = useState('Owner');
   const [ownerReviewNote, setOwnerReviewNote] = useState<string | null>(null);
   const [loadingRemote, setLoadingRemote] = useState(true);
+  const [bookingDates, setBookingDates] = useState({ start: '', end: '' });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setBookingDates(getValidDateRange(params.get('start'), params.get('end')));
+  }, []);
+
+  const currentBookingPath = () =>
+    getSafeReturnPath(
+      `${window.location.pathname}${window.location.search}`,
+      `/vehicle/${id}`
+    );
+
+  const authPath = (path: '/login/renter' | '/kyc') =>
+    `${path}?callbackUrl=${encodeURIComponent(currentBookingPath())}`;
 
   const id = useMemo(() => {
     const raw = params?.id;
@@ -120,7 +136,7 @@ export default function VehicleDetailPage() {
             <p className="text-muted-foreground mb-6">
               This vehicle is no longer available.
             </p>
-            <Button onClick={() => router.push('/browse')} className="rounded-xl px-8">
+            <Button onClick={() => router.push('/browse?view=list')} className="rounded-xl px-8">
               Back to browse
             </Button>
           </Card>
@@ -373,7 +389,7 @@ export default function VehicleDetailPage() {
                                   Add your NID and driving license. One-time admin check — takes 24 h.
                                 </p>
                                 <button
-                                  onClick={() => router.push('/kyc')}
+                                  onClick={() => router.push(authPath('/kyc'))}
                                   className="mt-2 text-primary font-black text-xs hover:underline"
                                 >
                                   Add details →
@@ -401,7 +417,7 @@ export default function VehicleDetailPage() {
                                   <p className="text-red-700 text-xs mt-0.5">{currentUser.verificationNote}</p>
                                 )}
                                 <button
-                                  onClick={() => router.push('/kyc')}
+                                  onClick={() => router.push(authPath('/kyc'))}
                                   className="mt-2 text-red-700 font-black text-xs hover:underline"
                                 >
                                   Resubmit documents →
@@ -416,14 +432,14 @@ export default function VehicleDetailPage() {
                         size="lg"
                         className="w-full h-16 text-xl font-black uppercase rounded-2xl shadow-xl shadow-primary/20"
                         onClick={() => {
-                          if (!currentUser) { router.push('/login'); return; }
+                          if (!currentUser) { router.push(authPath('/login/renter')); return; }
                           // Renters with no docs: redirect to KYC
                           if (currentUser.role === 'renter' && currentUser.kycStatus === 'none') {
-                            router.push('/kyc'); return;
+                            router.push(authPath('/kyc')); return;
                           }
                           // Renters with rejected docs: redirect to KYC
                           if (currentUser.role === 'renter' && currentUser.kycStatus === 'rejected') {
-                            router.push('/kyc'); return;
+                            router.push(authPath('/kyc')); return;
                           }
                           // Renters with pending KYC: cannot book yet
                           if (currentUser.role === 'renter' && currentUser.kycStatus === 'pending') {
@@ -454,7 +470,12 @@ export default function VehicleDetailPage() {
                     </div>
                   ) : (
                     <div className="pt-4 border-t animate-in fade-in duration-300">
-                      <BookingForm vehicleId={vehicle.id} onClose={() => setShowBookingForm(false)} />
+                      <BookingForm
+                        vehicleId={vehicle.id}
+                        initialStartDate={bookingDates.start}
+                        initialEndDate={bookingDates.end}
+                        onClose={() => setShowBookingForm(false)}
+                      />
                     </div>
                   )}
 

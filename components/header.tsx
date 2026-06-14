@@ -50,8 +50,7 @@ export function Header({ forcedRole }: HeaderProps) {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
   const renterNavLinks = [
-    { href: '/home', label: 'Explore', icon: MapPin },
-    { href: '/browse', label: 'Browse', icon: Search_ },
+    { href: '/browse?view=list', label: 'Browse', icon: Search_ },
     { href: '/renter-dashboard', label: 'My Bookings', icon: Calendar },
     { href: '/messages', label: 'Messages', icon: MessageSquare },
   ];
@@ -75,9 +74,10 @@ export function Header({ forcedRole }: HeaderProps) {
   const navItemIsActive = (
     link: HeaderNavLink | (typeof ownerNavLinks)[number] | (typeof renterNavLinks)[number]
   ) => {
-    if ('exact' in link && link.exact) return pathname === link.href;
-    if (link.href === '/') return pathname === '/';
-    return pathname === link.href || pathname.startsWith(link.href + '/');
+    const linkPath = link.href.split('?')[0];
+    if ('exact' in link && link.exact) return pathname === linkPath;
+    if (linkPath === '/') return pathname === '/';
+    return pathname === linkPath || pathname.startsWith(linkPath + '/');
   };
 
   const getNavLinks = () => {
@@ -127,7 +127,7 @@ export function Header({ forcedRole }: HeaderProps) {
 
         {showGuestChrome && (
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            <Link href="/browse" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/browse') ? 'bg-secondary/12 text-primary' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
+            <Link href="/browse?view=list" className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${isActive('/browse') ? 'bg-secondary/12 text-primary' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
               <Car size={15} /> Browse vehicles
             </Link>
             <Link href="/#how-it-works" className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground transition-all hover:bg-muted hover:text-primary">
@@ -285,7 +285,7 @@ export function Header({ forcedRole }: HeaderProps) {
             </>
           ) : showGuestChrome ? (
             <>
-              <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/browse?view=list" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 <Car size={18} /> Browse Vehicles
               </Link>
               <Link href="/#how-it-works" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>

@@ -185,3 +185,171 @@
   90%  { transform: rotate(3deg); }
   100% { transform: rotate(0deg); }
 }
+
+.motorent-map {
+  font-family: var(--font-sans), sans-serif;
+}
+
+.motorent-map .leaflet-tile-pane {
+  /* Subtle cool tint for CartoDB light tiles to match MotoRent branding */
+  filter: saturate(0.88) contrast(0.96) brightness(1.01);
+}
+
+.motorent-map .leaflet-control-zoom {
+  overflow: hidden;
+  border: 1.5px solid rgba(6, 62, 86, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(6, 62, 86, 0.12);
+  margin-right: 16px !important;
+  /* Position shifted upwards on mobile to avoid preview card and tab bar overlap */
+  margin-bottom: 120px !important;
+  transition: margin-bottom 200ms ease;
+}
+
+@media (min-width: 768px) {
+  .motorent-map .leaflet-control-zoom {
+    margin-bottom: 24px !important;
+  }
+}
+
+.motorent-map .leaflet-control-zoom a {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 0;
+  background: rgba(255, 255, 255, 0.98);
+  color: #063E56;
+  font: 700 18px/1 var(--font-sans), sans-serif;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.motorent-map .leaflet-control-zoom a:hover,
+.motorent-map .leaflet-control-zoom a:focus-visible {
+  background: #E8F8EF;
+  color: #05C96A;
+}
+
+.motorent-map .leaflet-control-attribution {
+  border-radius: 8px 0 0;
+  background: rgba(255, 255, 255, 0.85);
+  color: #667085;
+  font-size: 9px;
+  backdrop-filter: blur(6px);
+}
+
+.motorent-marker-shell {
+  border: 0;
+  background: transparent;
+}
+
+.motorent-marker {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  /* Centered horizontally, shifted upwards so pointer bottom sits exactly at coordinate */
+  transform: translate(-50%, -5px);
+  display: flex;
+  aria-hidden: false;
+  align-items: center;
+  width: max-content;
+  padding: 4px 10px 4px 4px;
+  border: 1.5px solid rgba(6, 62, 86, 0.08);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 6px 18px rgba(6, 62, 86, 0.12);
+  color: #063E56;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease, border-color 180ms ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.motorent-marker:hover,
+.motorent-marker.is-selected {
+  z-index: 999;
+  transform: translate(-50%, -9px) scale(1.06);
+  box-shadow: 0 12px 28px rgba(6, 62, 86, 0.2);
+}
+
+.motorent-marker.is-selected {
+  border-color: #05C96A;
+  box-shadow: 0 0 0 4px rgba(5, 201, 106, 0.15), 0 12px 28px rgba(5, 201, 106, 0.2);
+}
+
+.motorent-marker.is-unavailable {
+  opacity: 0.75;
+  filter: grayscale(0.2);
+}
+
+.motorent-marker-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Specific Vehicle Colors: Pastel-Tints for standard, Solid for Selected */
+.motorent-marker.is-car .motorent-marker-icon {
+  background: #EFF6FF; /* soft blue */
+  color: #1E40AF;
+}
+
+.motorent-marker.is-bike .motorent-marker-icon {
+  background: #ECFDF5; /* soft green */
+  color: #047857;
+}
+
+.motorent-marker.is-car.is-selected .motorent-marker-icon {
+  background: #063E56;
+  color: #ffffff;
+}
+
+.motorent-marker.is-bike.is-selected .motorent-marker-icon {
+  background: #05C96A;
+  color: #ffffff;
+}
+
+.motorent-marker.is-unavailable .motorent-marker-icon {
+  background: #F3F4F6;
+  color: #9CA3AF;
+}
+
+.motorent-marker-price {
+  padding-left: 6px;
+  padding-right: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-sans), sans-serif;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+.motorent-marker-tip {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  z-index: -1;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  /* Centered tail border */
+  border-right: 1.5px solid rgba(6, 62, 86, 0.08);
+  border-bottom: 1.5px solid rgba(6, 62, 86, 0.08);
+  transform: translateX(-50%) rotate(45deg);
+  transition: border-color 180ms ease;
+}
+
+.motorent-marker.is-selected .motorent-marker-tip {
+  border-right-color: #05C96A;
+  border-bottom-color: #05C96A;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motorent-marker {
+    transition: none;
+  }
+}

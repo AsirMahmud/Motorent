@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, MapPin, Car, Bike } from 'lucide-react';
+import { LayoutDashboard, Car, Bike } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const links: {
@@ -13,16 +13,16 @@ const links: {
   exact?: boolean;
 }[] = [
   { href: '/renter-dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/home', label: 'Explore', icon: MapPin },
-  { href: '/browse', label: 'Browse', icon: Car },
+  { href: '/browse?view=list', label: 'Browse', icon: Car },
 ];
 
 export function RenterDashboardSidebar() {
   const pathname = usePathname();
 
   const isActive = (href: string, exact?: boolean) => {
-    if (exact) return pathname === href;
-    return pathname === href || pathname.startsWith(href + '/');
+    const linkPath = href.split('?')[0];
+    if (exact) return pathname === linkPath;
+    return pathname === linkPath || pathname.startsWith(linkPath + '/');
   };
 
   return (
