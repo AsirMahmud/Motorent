@@ -11,7 +11,7 @@ import {
 import { useApp } from '@/lib/context';
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Search, Sliders, Bike, Car, Star, MapPin, LayoutGrid, List, Filter, X } from 'lucide-react';
+import { Search, Sliders, Bike, Car, Star, MapPin, LayoutGrid, List, Filter, X, CalendarDays } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { MobileExplorerTabBar } from '@/components/mobile-explorer-tab-bar';
@@ -24,6 +24,8 @@ export default function BrowsePage() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'bike' | 'car'>('all');
   const [priceFilter, setPriceFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const filteredVehicles = useMemo(() => {
     return vehicles
@@ -53,9 +55,11 @@ export default function BrowsePage() {
     setSortBy('rating');
     setTypeFilter('all');
     setPriceFilter('all');
+    setStartDate('');
+    setEndDate('');
   };
 
-  const hasFilters = searchTerm || typeFilter !== 'all' || priceFilter !== 'all';
+  const hasFilters = searchTerm || typeFilter !== 'all' || priceFilter !== 'all' || startDate || endDate;
 
   return (
     <div
@@ -127,6 +131,35 @@ export default function BrowsePage() {
                   <SelectItem value="price-high">Most Premium</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div id="rental-dates" className="mt-4 grid gap-3 rounded-2xl border border-primary/10 bg-muted/30 p-4 sm:grid-cols-[auto_1fr_1fr] sm:items-end">
+            <div className="flex items-center gap-2 pb-1 text-sm font-bold text-primary">
+              <CalendarDays className="h-4 w-4 text-secondary" />
+              Rental period
+            </div>
+            <div>
+              <label htmlFor="browseStartDate" className="mb-1 block text-xs font-bold text-muted-foreground">Start date</label>
+              <Input
+                id="browseStartDate"
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                value={startDate}
+                onChange={(event) => setStartDate(event.target.value)}
+                className="h-11 rounded-xl bg-white"
+              />
+            </div>
+            <div>
+              <label htmlFor="browseEndDate" className="mb-1 block text-xs font-bold text-muted-foreground">End date</label>
+              <Input
+                id="browseEndDate"
+                type="date"
+                min={startDate || new Date().toISOString().split('T')[0]}
+                value={endDate}
+                onChange={(event) => setEndDate(event.target.value)}
+                className="h-11 rounded-xl bg-white"
+              />
             </div>
           </div>
 

@@ -82,14 +82,6 @@ export function RenterTracker({
       const L = (await import('leaflet')).default;
       if (cancelled || !mapContainerRef.current) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-
       const { lat: la0, lng: ln0 } = coordsRef.current;
       const center: [number, number] = la0 != null && ln0 != null ? [la0, ln0] : [23.8103, 90.4125];
       const map = L.map(mapContainerRef.current, { center, zoom: 15, zoomControl: true });
@@ -114,8 +106,8 @@ export function RenterTracker({
       className: '',
       html: `
         <div style="position:relative;width:24px;height:24px;">
-          <div style="position:absolute;inset:0;background:rgba(237,97,64,.25);border-radius:50%;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite;"></div>
-          <div style="position:absolute;inset:3px;background:#ED6140;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.25);"></div>
+          <div style="position:absolute;inset:0;background:rgba(5,201,106,.25);border-radius:50%;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite;"></div>
+          <div style="position:absolute;inset:3px;background:#05C96A;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.25);"></div>
         </div>
         <style>@keyframes ping{75%,100%{transform:scale(2);opacity:0}}</style>`,
       iconSize: [24, 24],
@@ -244,7 +236,6 @@ export function RenterTracker({
           </div>
 
           {/* Map */}
-          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
           <div ref={mapContainerRef} style={{ height: 280 }} />
 
           {/* Bottom hint */}

@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { MapView } from '@/components/map-view';
 import { useApp } from '@/lib/context';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Search, MapPin, Bike, Car, Star, Navigation, Shield, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,22 +15,7 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const { vehicles, currentUser, authReady } = useApp();
   const router = useRouter();
-
-  // Auth guard — redirect to login once auth state is known
-  useEffect(() => {
-    if (authReady && !currentUser) {
-      router.replace('/login');
-    }
-  }, [authReady, currentUser, router]);
-
-  // Show a loading state while we wait for auth check
-  if (!authReady || !currentUser) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
+  const mapRef = useRef<import('leaflet').Map | null>(null);
   const [filter, setFilter] = useState<'all' | 'bike' | 'car'>('all');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,68 +30,39 @@ export default function Home() {
 
   const selectedVehicle = useMemo(() => vehicles.find(v => v.id === selectedVehicleId), [vehicles, selectedVehicleId]);
 
-  // Map marker positions (simulate for demo)
-  const markerPositions = useMemo(() => {
-    return filteredVehicles.map((v, i) => ({
-      ...v,
-      top: `${20 + (i % 4) * 18 + Math.sin(i) * 5}%`,
-      left: `${15 + (i % 5) * 16 + Math.cos(i) * 4}%`,
-    }));
-  }, [filteredVehicles]);
+  // Auth guard — redirect to login once auth state is known
+  // Show a loading state while we wait for auth check
+  if (!authReady) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+  const findNearMe = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        mapRef.current?.setView([coords.latitude, coords.longitude], 14);
+      },
+      () => {
+        mapRef.current?.setView([23.8103, 90.4125], 12);
+      },
+      { enableHighAccuracy: true, maximumAge: 60_000, timeout: 12_000 }
+    );
+  };
 
   return (
     <div className="h-screen bg-background flex flex-col font-sans overflow-hidden">
       <Header />
 
       <main className="flex-1 relative overflow-hidden">
-        {/* Map Background */}
-        <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8f4f0 0%, #dde9f5 50%, #e5ede8 100%)' }}>
-          {/* Grid pattern for map-like feel */}
-          <div className="absolute inset-0 opacity-20" style={{
-            backgroundImage: `repeating-linear-gradient(0deg, #94a3b8 0px, transparent 1px, transparent 60px, #94a3b8 60px),
-              repeating-linear-gradient(90deg, #94a3b8 0px, transparent 1px, transparent 60px, #94a3b8 60px)`,
-          }} />
-          {/* Road-like lines */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-[30%] left-0 right-0 h-8 bg-gray-400 rounded" style={{ transform: 'rotate(-2deg)' }} />
-            <div className="absolute top-[55%] left-0 right-0 h-12 bg-gray-400 rounded" style={{ transform: 'rotate(1deg)' }} />
-            <div className="absolute top-0 bottom-0 left-[25%] w-10 bg-gray-400 rounded" style={{ transform: 'rotate(-1deg)' }} />
-            <div className="absolute top-0 bottom-0 left-[60%] w-8 bg-gray-400 rounded" />
-          </div>
-          {/* Area blocks */}
-          <div className="absolute top-[15%] left-[30%] w-32 h-20 bg-green-200/40 rounded-xl border border-green-300/30" />
-          <div className="absolute top-[40%] left-[55%] w-24 h-16 bg-blue-200/30 rounded-xl border border-blue-300/30" />
-          <div className="absolute top-[60%] left-[10%] w-28 h-20 bg-amber-100/40 rounded-xl border border-amber-300/30" />
-          <div className="absolute top-[20%] left-[65%] w-36 h-24 bg-purple-100/30 rounded-xl border border-purple-300/30" />
-        </div>
-
-        {/* Vehicle Markers */}
-        {markerPositions.map((vehicle) => (
-          <button
-            key={vehicle.id}
-            onClick={() => setSelectedVehicleId(selectedVehicleId === vehicle.id ? null : vehicle.id)}
-            className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-20 ${selectedVehicleId === vehicle.id ? 'scale-125 z-50' : 'scale-100 hover:scale-110'
-              }`}
-            style={{ top: vehicle.top, left: vehicle.left }}
-          >
-            <div className={`relative p-2.5 rounded-2xl shadow-xl border-2 ${selectedVehicleId === vehicle.id
-              ? 'bg-primary border-white'
-              : vehicle.isAvailable ? 'bg-white border-primary' : 'bg-gray-200 border-gray-400'
-              }`}>
-              {vehicle.type === 'bike'
-                ? <Bike size={20} className={selectedVehicleId === vehicle.id ? 'text-white' : vehicle.isAvailable ? 'text-primary' : 'text-gray-500'} />
-                : <Car size={20} className={selectedVehicleId === vehicle.id ? 'text-white' : vehicle.isAvailable ? 'text-primary' : 'text-gray-500'} />
-              }
-              {!vehicle.isAvailable && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
-              )}
-            </div>
-            <div className={`mt-1 px-2 py-0.5 rounded-lg text-[10px] font-black shadow-md text-center ${selectedVehicleId === vehicle.id ? 'bg-primary text-white' : 'bg-white text-foreground'
-              }`}>
-              ৳{vehicle.priceDaily.toLocaleString()}
-            </div>
-          </button>
-        ))}
+        <MapView
+          vehicles={filteredVehicles}
+          selectedVehicleId={selectedVehicleId}
+          onVehicleSelect={setSelectedVehicleId}
+          mapRef={mapRef}
+        />
 
         {/* Floating Search / Filter Bar */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 z-40">
@@ -120,7 +77,12 @@ export default function Home() {
               />
             </div>
             <div className="h-6 w-px bg-border" />
-            <Button variant="ghost" size="sm" className="rounded-xl gap-1.5 text-primary font-bold shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-xl gap-1.5 text-primary font-bold shrink-0"
+              onClick={findNearMe}
+            >
               <Navigation size={14} /> Near Me
             </Button>
           </div>

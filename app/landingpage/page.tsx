@@ -54,7 +54,7 @@ export default function LandingPage() {
     {
       name: 'Premium Bikes',
       count: '240+ Available',
-      image: '/hero-bike.png',
+      image: '/hero-bike-v2.png',
       link: '/browse?type=bike'
     },
     {
@@ -123,7 +123,7 @@ export default function LandingPage() {
               <div className="flex-1 relative">
                 <div className="relative w-full aspect-[4/3] rounded-[40px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] group">
                   <Image 
-                    src="/hero-bike.png" 
+                    src="/hero-bike-v2.png" 
                     alt="Premium Ride" 
                     fill 
                     className="object-cover group-hover:scale-110 transition-transform duration-1000"
@@ -157,7 +157,7 @@ export default function LandingPage() {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="bg-slate-900 rounded-[40px] p-10 lg:p-16 flex flex-wrap justify-center gap-12 lg:justify-between items-center text-white shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #ED6140 0%, transparent 50%)' }} />
+              <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #05C96A 0%, transparent 50%)' }} />
               {stats.map((stat, i) => (
                 <div key={i} className="flex flex-col items-center text-center relative z-10">
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-4 text-primary">

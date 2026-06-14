@@ -15,7 +15,7 @@ import {
 import { OwnerDocumentField } from '@/components/owner-document-field';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { CheckCircle2, DollarSign, ArrowLeft, Bike, Car, MapPin } from 'lucide-react';
+import { CheckCircle2, ArrowLeft, Bike, Car, MapPin } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { DashboardPageHeader } from '@/components/dashboard-page-header';
 import {
@@ -324,7 +324,7 @@ export function OwnerAddVehicleForm() {
                   <div className="space-y-1.5">
                     <Label>Hourly (optional)</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <span className="absolute left-3 top-2.5 text-base font-bold text-muted-foreground">৳</span>
                       <Input
                         type="number"
                         min={0}
@@ -338,14 +338,14 @@ export function OwnerAddVehicleForm() {
                   <div className="space-y-1.5">
                     <Label>Daily *</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <span className="absolute left-3 top-2.5 text-base font-bold text-muted-foreground">৳</span>
                       <Input type="number" value={dailyRate} onChange={(e) => setDailyRate(e.target.value)} className="pl-9 h-11 rounded-xl" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Weekly (optional)</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <span className="absolute left-3 top-2.5 text-base font-bold text-muted-foreground">৳</span>
                       <Input
                         type="number"
                         min={0}

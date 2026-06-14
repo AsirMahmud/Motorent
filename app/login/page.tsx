@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bike, Shield, Car, UserCircle2 } from 'lucide-react';
+import { Bike, Car, UserCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AuthPageHeader } from '@/components/auth-page-header';
 
@@ -19,13 +19,6 @@ const options = [
     description: 'Email and password for approved vehicle hosts.',
     icon: Car,
     accent: 'bg-primary',
-  },
-  {
-    href: '/login/admin',
-    title: 'Admin',
-    description: 'Staff access to approvals and platform management.',
-    icon: Shield,
-    accent: 'bg-slate-900',
   },
 ] as const;
 

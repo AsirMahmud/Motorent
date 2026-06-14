@@ -43,7 +43,7 @@ export function VehicleListingMapPicker({
           className: '',
           html: `<div style="
               width:28px;height:28px;
-              background:#ED6140;border:3px solid #fff;
+              background:#05C96A;border:3px solid #fff;
               border-radius:50% 50% 50% 0;
               transform:rotate(-45deg);
               box-shadow:0 2px 8px rgba(0,0,0,0.25);
@@ -74,14 +74,6 @@ export function VehicleListingMapPicker({
 
     (async () => {
       const L = (await import('leaflet')).default as typeof import('leaflet');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-
       if (cancelled || !containerRef.current) return;
 
       leafletRef.current = L;
@@ -155,7 +147,6 @@ export function VehicleListingMapPicker({
 
   return (
     <div className="space-y-3">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <div
         ref={containerRef}
         className="relative z-0 h-56 w-full overflow-hidden rounded-xl border border-border bg-muted/30 sm:h-72"

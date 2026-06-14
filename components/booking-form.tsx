@@ -211,7 +211,7 @@ export function BookingForm({ vehicleId, onClose }: BookingFormProps) {
       </div>
 
       {days > 0 && (
-        <div className="p-4 bg-primary/5 rounded-2xl border-2 border-primary/10 space-y-3">
+        <div className="space-y-3 rounded-2xl border-2 border-secondary/30 bg-secondary/10 p-4">
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground font-medium">
               ৳{pricePerDay} × {days} days

@@ -128,9 +128,9 @@ export default function SignupPage() {
           <Card className="p-6 sm:p-8 rounded-3xl shadow-2xl border-none">
             <form className="space-y-8" onSubmit={handleSignup}>
               <div>
-                <h1 className="text-3xl font-black mb-1">Owner verification</h1>
+                <h1 className="text-3xl font-black mb-1">Sign up as Owner</h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  Enter your details, then add four documents. JPG, PNG, or PDF — max 8MB (images) or 16MB (PDF).
+                  Sign up as an owner to list your vehicles for booking.
                 </p>
               </div>
 

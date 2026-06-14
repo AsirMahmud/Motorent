@@ -60,15 +60,6 @@ export function MapView({
     (async () => {
       const L = (await import('leaflet')).default;
 
-      // Fix default marker icon paths broken by webpack
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-
       if (cancelled || !containerRef.current) return;
 
       const map = L.map(containerRef.current, {
@@ -136,10 +127,10 @@ export function MapView({
         existingIds.delete(v.id);
         const isSelected = v.id === selectedVehicleId;
 
-        // Colour: primary orange when selected / available, grey when not available
-        const bg = isSelected ? '#ED6140' : v.isAvailable ? '#ffffff' : '#d1d5db';
-        const border = isSelected ? '#ffffff' : v.isAvailable ? '#ED6140' : '#9ca3af';
-        const text = isSelected ? '#ffffff' : v.isAvailable ? '#ED6140' : '#6b7280';
+        // MotoRent navy marks selection; green marks available vehicles.
+        const bg = isSelected ? '#063E56' : v.isAvailable ? '#ffffff' : '#d1d5db';
+        const border = isSelected ? '#ffffff' : v.isAvailable ? '#05C96A' : '#9ca3af';
+        const text = isSelected ? '#ffffff' : v.isAvailable ? '#063E56' : '#6b7280';
 
         const icon = L.divIcon({
           className: '',
@@ -299,18 +290,10 @@ export function MapView({
   }, []);
 
   return (
-    <>
-      {/* Leaflet CSS */}
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      />
-      <div
-        ref={containerRef}
-        className="absolute inset-0 z-0"
-        style={{ background: '#e8f4f0' }}
-      />
-    </>
+    <div
+      ref={containerRef}
+      className="absolute inset-0 z-0 bg-[linear-gradient(135deg,#e8f4f0_0%,#dde9f5_50%,#e5ede8_100%)]"
+    />
   );
 }
 

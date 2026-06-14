@@ -111,7 +111,7 @@ export function OwnerDocumentField({
           >
             <HardDrive className="h-8 w-8 text-muted-foreground" aria-hidden />
             <span className="font-semibold text-foreground">Choose a file</span>
-            <span className="text-xs text-muted-foreground">Stored locally until you send it — JPEG, PNG, or PDF</span>
+            <span className="text-xs text-muted-foreground">JPG, PNG, or PDF - max 8MB for images or 16MB for PDF</span>
             <input
               id={inputId}
               ref={fileInputRef}
@@ -126,7 +126,7 @@ export function OwnerDocumentField({
           {localFile ? (
             <div className="space-y-3 rounded-xl border border-border bg-background p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Step 2 · Send to UploadThing
+                Step 2 - Upload your file
               </p>
               <div className="flex min-w-0 items-center gap-2 text-sm">
                 <FileUp className="h-4 w-4 shrink-0 text-primary" aria-hidden />
@@ -151,7 +151,7 @@ export function OwnerDocumentField({
                   disabled={disabled || isUploading}
                   onClick={handleUploadToUploadThing}
                 >
-                  {isUploading ? "Uploading…" : "Upload document"}
+                  {isUploading ? "Uploading..." : "Upload your file"}
                 </Button>
               </div>
             </div>

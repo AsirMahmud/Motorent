@@ -123,16 +123,16 @@ export default async function HomePage() {
 
               <div className="mt-8 max-w-2xl rounded-[1.75rem] border border-primary/10 bg-white p-3 shadow-[0_24px_70px_rgba(6,62,86,0.14)]">
                 <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                  <Link href="/browse" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
+                  <Link href="/home" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
                       <MapPin className="h-5 w-5" />
                     </span>
                     <span>
-                      <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Location</span>
-                      <span className="text-sm font-semibold text-primary">Dhaka, Bangladesh</span>
+                      <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">View map</span>
+                      <span className="text-sm font-semibold text-primary">Vehicles around Dhaka</span>
                     </span>
                   </Link>
-                  <Link href="/browse" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
+                  <Link href="/browse#rental-dates" className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-muted">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 text-primary">
                       <CalendarDays className="h-5 w-5" />
                     </span>
@@ -169,8 +169,8 @@ export default async function HomePage() {
             <div className="relative mx-auto w-full max-w-xl">
               <div className="relative aspect-[4/4.6] overflow-hidden rounded-[2rem] bg-muted shadow-[0_28px_80px_rgba(6,62,86,0.18)]">
                 <Image
-                  src="/hero-bike.png"
-                  alt="A premium motorcycle available to rent through MotoRent"
+                  src="/hero-motorent.jpg"
+                  alt="A white car with the MotoRent logo and a hand holding a smartphone showing the MotoRent app"
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 46vw"
@@ -256,7 +256,7 @@ export default async function HomePage() {
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
               {[
-                { name: 'Bikes & scooters', text: 'Quick commutes, weekend rides, and efficient city movement.', image: '/hero-bike.png', icon: Bike, href: '/browse?type=bike' },
+                { name: 'Bikes & scooters', text: 'Quick commutes, weekend rides, and efficient city movement.', image: '/hero-bike-v2.png', icon: Bike, href: '/browse?type=bike' },
                 { name: 'Cars & SUVs', text: 'Comfortable family trips, business travel, and longer journeys.', image: '/category-car.png', icon: Car, href: '/browse?type=car' },
               ].map((category) => (
                 <Link key={category.name} href={category.href} className="group relative min-h-[390px] overflow-hidden rounded-[2rem] bg-primary shadow-[0_20px_55px_rgba(6,62,86,0.12)]">
@@ -395,7 +395,7 @@ export default async function HomePage() {
             <div>
               <p className="mb-4 font-bold text-secondary">Contact</p>
               <a className="flex items-center gap-2 py-1.5 text-white/60 hover:text-white" href="mailto:support@motorent.com"><Mail className="h-3.5 w-3.5" /> support@motorent.com</a>
-              <a className="flex items-center gap-2 py-1.5 text-white/60 hover:text-white" href="tel:+8801800000000"><Phone className="h-3.5 w-3.5" /> +880 1800-000000</a>
+              <a className="flex items-center gap-2 py-1.5 text-white/60 hover:text-white" href="tel:+8801768969135"><Phone className="h-3.5 w-3.5" /> +880 176-8969135</a>
               <p className="flex items-center gap-2 py-1.5 text-white/60"><MapPin className="h-3.5 w-3.5" /> Dhaka, Bangladesh</p>
             </div>
           </div>
