@@ -239,6 +239,8 @@
 }
 
 .motorent-marker-shell {
+  position: relative;
+  overflow: visible;
   border: 0;
   background: transparent;
 }
@@ -250,7 +252,6 @@
   /* Centered horizontally, shifted upwards so pointer bottom sits exactly at coordinate */
   transform: translate(-50%, -5px);
   display: flex;
-  aria-hidden: false;
   align-items: center;
   width: max-content;
   padding: 4px 10px 4px 4px;
@@ -289,6 +290,18 @@
   place-items: center;
   border-radius: 50%;
   transition: background-color 180ms ease, color 180ms ease;
+}
+
+.motorent-marker-vehicle-svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
 }
 
 /* Specific Vehicle Colors: Pastel-Tints for standard, Solid for Selected */

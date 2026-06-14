@@ -1,9 +1,10 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
-import { CheckCircle2, FileUp, HardDrive } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { CheckCircle2, FileUp, HardDrive, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUploadThing } from "@/lib/uploadthing-client";
+import Image from "next/image";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,application/pdf";
 
@@ -19,6 +20,8 @@ type Props = {
   onError: (message: string) => void;
   onBusy: (busy: boolean) => void;
   disabled?: boolean;
+  /** When true, show a visual image preview for the uploaded/selected image */
+  showPreview?: boolean;
 };
 
 export function OwnerDocumentField({
@@ -32,11 +35,29 @@ export function OwnerDocumentField({
   onError,
   onBusy,
   disabled,
+  showPreview,
 }: Props) {
   const done = Boolean(url && fileName);
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [localFile, setLocalFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+
+  // Generate a blob preview URL for the locally-selected file
+  useEffect(() => {
+    if (!showPreview || !localFile) {
+      setLocalPreviewUrl(null);
+      return;
+    }
+    // Only preview image files
+    if (!localFile.type.startsWith("image/")) {
+      setLocalPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(localFile);
+    setLocalPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [localFile, showPreview]);
 
   const { startUpload, isUploading } = useUploadThing("document", {
     onUploadBegin: () => {
@@ -48,6 +69,7 @@ export function OwnerDocumentField({
       const f = res[0];
       if (f?.url && f.name) {
         setLocalFile(null);
+        setLocalPreviewUrl(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         onUploaded(f.url, f.name);
       }
@@ -66,6 +88,7 @@ export function OwnerDocumentField({
 
   const clearLocalOnly = () => {
     setLocalFile(null);
+    setLocalPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -77,6 +100,7 @@ export function OwnerDocumentField({
   const startReplace = () => {
     onClear();
     setLocalFile(null);
+    setLocalPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     onError("");
   };
@@ -128,6 +152,25 @@ export function OwnerDocumentField({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Step 2 - Upload your file
               </p>
+
+              {/* Local file preview (before upload) */}
+              {showPreview && localPreviewUrl && (
+                <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-border/60 bg-muted/30">
+                  <Image
+                    src={localPreviewUrl}
+                    alt="New photo preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+                    <p className="text-[11px] font-semibold text-white/90 flex items-center gap-1">
+                      <ImageIcon size={12} /> New photo preview
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex min-w-0 items-center gap-2 text-sm">
                 <FileUp className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                 <span className="truncate font-medium" title={localFile.name}>
@@ -158,26 +201,46 @@ export function OwnerDocumentField({
           ) : null}
         </div>
       ) : (
-        <div className="flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50/90 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wide text-green-800">Uploaded</p>
-              <p className="truncate text-sm font-medium text-green-950" title={fileName ?? undefined}>
-                {fileName}
-              </p>
+        <div className="space-y-3">
+          {/* Uploaded image preview */}
+          {showPreview && url && (
+            <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-border/60 bg-muted/30">
+              <Image
+                src={url}
+                alt={title}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              <div className="absolute top-2 right-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">
+                  <CheckCircle2 size={11} /> Current
+                </span>
+              </div>
             </div>
+          )}
+
+          <div className="flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50/90 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-green-800">Uploaded</p>
+                <p className="truncate text-sm font-medium text-green-950" title={fileName ?? undefined}>
+                  {fileName}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0 border-green-300 bg-white font-bold text-green-900 hover:bg-green-100"
+              disabled={disabled}
+              onClick={startReplace}
+            >
+              Change file
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0 border-green-300 bg-white font-bold text-green-900 hover:bg-green-100"
-            disabled={disabled}
-            onClick={startReplace}
-          >
-            Change file
-          </Button>
         </div>
       )}
     </div>

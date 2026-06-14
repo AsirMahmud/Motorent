@@ -30,8 +30,8 @@ function jitterCoords(
 
 function createVehicleMarkerHtml(vehicle: Vehicle, isSelected: boolean) {
   const vehicleIcon = vehicle.type === 'bike'
-    ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3" /><circle cx="18.5" cy="16.5" r="3" /><path d="M18.5 16.5L16 8.5M16 8.5L14 5.5M16 8.5h-2.5" /><path d="M5.5 16.5h3.5l3-5.5h4L18.5 16.5" /><path d="M6 13.5c1.5-2 4-2.5 6-1.5M7.5 11h3.5" /></svg>`
-    : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 15h3.5a2.5 2.5 0 0 1 4 0h5a2.5 2.5 0 0 1 4 0H22v-2.5c0-1.2-.8-2.2-2-2.5l-3.5-1.5-3.5-2.5H8L5 8.5c-1 .5-1.8 1.5-1.8 2.8V15z" /><circle cx="7.5" cy="15" r="2" /><circle cx="16.5" cy="15" r="2" /><path d="M8.5 7h4l2 2.5H6.5L8.5 7z" /></svg>`;
+    ? `<svg class="motorent-marker-vehicle-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3" /><circle cx="18.5" cy="16.5" r="3" /><path d="M18.5 16.5L16 8.5M16 8.5L14 5.5M16 8.5h-2.5" /><path d="M5.5 16.5h3.5l3-5.5h4L18.5 16.5" /><path d="M6 13.5c1.5-2 4-2.5 6-1.5M7.5 11h3.5" /></svg>`
+    : `<svg class="motorent-marker-vehicle-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15h3.5a2.5 2.5 0 0 1 4 0h5a2.5 2.5 0 0 1 4 0H22v-2.5c0-1.2-.8-2.2-2-2.5l-3.5-1.5-3.5-2.5H8L5 8.5c-1 .5-1.8 1.5-1.8 2.8V15z" /><circle cx="7.5" cy="15" r="2" /><circle cx="16.5" cy="15" r="2" /><path d="M8.5 7h4l2 2.5H6.5L8.5 7z" /></svg>`;
 
   return `
     <div class="motorent-marker ${isSelected ? 'is-selected' : ''} ${vehicle.type === 'bike' ? 'is-bike' : 'is-car'} ${vehicle.isAvailable ? '' : 'is-unavailable'}">
@@ -147,7 +147,7 @@ export function MapView({
         const icon = L.divIcon({
           className: 'motorent-marker-shell',
           html: createVehicleMarkerHtml(v, isSelected),
-          iconSize: [0, 0],
+          iconSize: [1, 1],
           iconAnchor: [0, 0],
         });
 

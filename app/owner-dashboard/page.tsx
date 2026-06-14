@@ -14,7 +14,7 @@ import {
   DollarSign, Car, CheckCircle2, XCircle, Clock,
   MessageSquare, Phone, Plus, BarChart2, Calendar,
   ShieldCheck, Eye, Users, ChevronDown, ChevronUp,
-  MapPin, Banknote, AlertTriangle, FileText,
+  MapPin, Banknote, AlertTriangle, FileText, Pencil,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -768,6 +768,19 @@ export default function OwnerDashboardPage() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-9 rounded-xl text-xs font-bold gap-1 border-primary/30 text-primary hover:bg-primary/5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/owner-dashboard/edit-vehicle/${v.id}`);
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              Edit
+                            </Button>
                             <Button
                               type="button"
                               variant="outline"

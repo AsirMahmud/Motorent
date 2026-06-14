@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/select';
 import { OwnerDocumentField } from '@/components/owner-document-field';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
-import { CheckCircle2, ArrowLeft, Bike, Car, MapPin } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { CheckCircle2, ArrowLeft, Bike, Car, MapPin, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { DashboardPageHeader } from '@/components/dashboard-page-header';
 import {
@@ -25,20 +25,41 @@ import {
 
 type DocKey = 'photo' | 'ownership' | 'insurance';
 
-const initialDocs: Record<DocKey, { url: string | null; name: string | null }> = {
-  photo: { url: null, name: null },
-  ownership: { url: null, name: null },
-  insurance: { url: null, name: null },
+type VehicleData = {
+  id: string;
+  ownerId: string;
+  category: string;
+  brand: string;
+  model: string;
+  year: number;
+  registrationNumber: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  seats: number;
+  fuelType: string;
+  transmission: string;
+  description: string | null;
+  features: string[];
+  dailyRate: number;
+  priceHourly: number | null;
+  priceWeekly: number | null;
+  vehiclePhotoUrl: string;
+  ownershipPaperUrl: string;
+  insurancePaperUrl: string | null;
+  status: string;
 };
 
-export function OwnerAddVehicleForm() {
+export function OwnerEditVehicleForm({ vehicleId }: { vehicleId: string }) {
   const router = useRouter();
   const { currentUser } = useApp();
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
   const uploadCountRef = useRef(0);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+  const [fetchError, setFetchError] = useState('');
 
   const [category, setCategory] = useState<'BIKE' | 'CAR'>('BIKE');
   const [brand, setBrand] = useState('');
@@ -55,7 +76,59 @@ export function OwnerAddVehicleForm() {
   const [priceHourly, setPriceHourly] = useState('');
   const [dailyRate, setDailyRate] = useState('');
   const [priceWeekly, setPriceWeekly] = useState('');
-  const [docs, setDocs] = useState(initialDocs);
+  const [docs, setDocs] = useState<Record<DocKey, { url: string | null; name: string | null }>>({
+    photo: { url: null, name: null },
+    ownership: { url: null, name: null },
+    insurance: { url: null, name: null },
+  });
+
+  // Fetch existing vehicle data
+  const fetchVehicle = useCallback(async () => {
+    setLoading(true);
+    setFetchError('');
+    try {
+      const res = await fetch(`/api/vehicles/${vehicleId}`, { credentials: 'same-origin' });
+      if (!res.ok) {
+        const data = await res.json();
+        setFetchError(data.error || 'Failed to load vehicle');
+        return;
+      }
+      const data = await res.json();
+      const v = data.vehicle as VehicleData;
+
+      // Populate form fields
+      setCategory(v.category === 'CAR' ? 'CAR' : 'BIKE');
+      setBrand(v.brand);
+      setModel(v.model);
+      setYear(String(v.year));
+      setRegistrationNumber(v.registrationNumber);
+      setLocation(v.location);
+      if (v.latitude != null && v.longitude != null) {
+        setMapPin({ lat: v.latitude, lng: v.longitude });
+      }
+      setSeats(String(v.seats));
+      setFuelType(v.fuelType);
+      setTransmission(v.transmission);
+      setDescription(v.description || '');
+      setFeaturesText(v.features.join(', '));
+      setPriceHourly(v.priceHourly != null ? String(v.priceHourly) : '');
+      setDailyRate(String(v.dailyRate));
+      setPriceWeekly(v.priceWeekly != null ? String(v.priceWeekly) : '');
+      setDocs({
+        photo: { url: v.vehiclePhotoUrl, name: 'Vehicle photo' },
+        ownership: { url: v.ownershipPaperUrl, name: 'Ownership paper' },
+        insurance: { url: v.insurancePaperUrl || null, name: v.insurancePaperUrl ? 'Insurance paper' : null },
+      });
+    } catch {
+      setFetchError('Network error loading vehicle');
+    } finally {
+      setLoading(false);
+    }
+  }, [vehicleId]);
+
+  useEffect(() => {
+    fetchVehicle();
+  }, [fetchVehicle]);
 
   const setUploadBusyTracked = (busy: boolean) => {
     if (busy) uploadCountRef.current += 1;
@@ -93,8 +166,8 @@ export function OwnerAddVehicleForm() {
 
     setSubmitting(true);
     try {
-      const response = await fetch('/api/vehicles', {
-        method: 'POST',
+      const response = await fetch(`/api/vehicles/${vehicleId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
@@ -104,9 +177,7 @@ export function OwnerAddVehicleForm() {
           year: Number(year),
           registrationNumber,
           location: location.trim(),
-          ...(mapPin
-            ? { latitude: mapPin.lat, longitude: mapPin.lng }
-            : {}),
+          ...(mapPin ? { latitude: mapPin.lat, longitude: mapPin.lng } : {}),
           seats: Number(seats),
           fuelType,
           transmission,
@@ -126,12 +197,12 @@ export function OwnerAddVehicleForm() {
 
       const data = await response.json();
       if (!response.ok) {
-        setError(data.error || 'Submission failed');
+        setError(data.error || 'Update failed');
         return;
       }
       setDone(true);
     } catch {
-      setError('Submission failed. Please try again.');
+      setError('Update failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -150,6 +221,40 @@ export function OwnerAddVehicleForm() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4 py-16">
+        <Card className="w-full max-w-md rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="flex justify-center mb-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+          <p className="text-muted-foreground font-medium">Loading vehicle details…</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4 py-16">
+        <Card className="w-full max-w-md rounded-xl border border-border/60 bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+            <MapPin className="text-red-500" size={36} />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">Failed to load</h2>
+          <p className="mb-6 text-muted-foreground text-sm">{fetchError}</p>
+          <Button
+            variant="outline"
+            className="h-12 w-full rounded-lg font-medium"
+            onClick={() => router.push('/owner-dashboard')}
+          >
+            Back to dashboard
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   if (done) {
     return (
       <div className="flex flex-1 flex-col font-sans">
@@ -158,8 +263,8 @@ export function OwnerAddVehicleForm() {
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
               <CheckCircle2 className="text-green-500" size={40} />
             </div>
-            <h2 className="mb-2 text-2xl font-semibold">Vehicle submitted</h2>
-            <p className="mb-6 text-muted-foreground">Your vehicle profile is pending admin document review.</p>
+            <h2 className="mb-2 text-2xl font-semibold">Vehicle updated</h2>
+            <p className="mb-6 text-muted-foreground">Your vehicle details and pricing have been saved.</p>
             <Button
               variant="outline"
               className="h-12 w-full rounded-lg font-medium"
@@ -179,8 +284,8 @@ export function OwnerAddVehicleForm() {
         <div className="w-full max-w-xl space-y-6">
           <DashboardPageHeader
             eyebrow="Owner hub"
-            title="List a vehicle"
-            description="Add details and documents. Your listing stays pending until an admin approves it."
+            title="Edit vehicle"
+            description="Update your vehicle details, specs, and pricing. Changes take effect immediately."
           />
           <Card className="rounded-xl border border-border/60 bg-card p-6 shadow-sm sm:p-8">
             <div className="space-y-6">
@@ -195,7 +300,7 @@ export function OwnerAddVehicleForm() {
               <div>
                 <h2 className="mb-1 text-lg font-semibold tracking-tight">Vehicle details</h2>
                 <p className="text-sm text-muted-foreground">
-                  Pick files on your device first, then upload each to the cloud.
+                  Update any details below. Required documents must remain uploaded.
                 </p>
               </div>
 
@@ -410,7 +515,7 @@ export function OwnerAddVehicleForm() {
                 disabled={submitting || uploadBusy}
                 onClick={handleSubmit}
               >
-                {submitting ? 'Submitting…' : uploadBusy ? 'Uploading…' : 'Submit for Admin Review →'}
+                {submitting ? 'Saving changes…' : uploadBusy ? 'Uploading…' : 'Save Changes'}
               </Button>
             </div>
           </Card>
