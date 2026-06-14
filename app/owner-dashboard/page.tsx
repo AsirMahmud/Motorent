@@ -3,6 +3,17 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChatPanel } from '@/components/chat-panel';
 import { RenterTracker } from '@/components/renter-tracker';
 import { RentalTimeline } from '@/components/rental-timeline';
@@ -15,6 +26,7 @@ import {
   MessageSquare, Phone, Plus, BarChart2, Calendar,
   ShieldCheck, Eye, Users, ChevronDown, ChevronUp,
   MapPin, Banknote, AlertTriangle, FileText, Pencil,
+  Trash2, Power,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,6 +42,7 @@ type ApiVehicle = {
   dailyRate: number;
   vehiclePhotoUrl: string;
   status: string;
+  isActive: boolean;
   viewCount: number;
   registrationNumber: string;
 };
@@ -117,6 +130,10 @@ export default function OwnerDashboardPage() {
     lateFee: 0,
     damageFee: 0,
   });
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<ApiVehicle | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   const load = useCallback(async () => {
     setError('');
@@ -254,6 +271,46 @@ export default function OwnerDashboardPage() {
     }
   };
 
+  const handleToggleActive = async (vehicle: ApiVehicle) => {
+    setTogglingId(vehicle.id);
+    try {
+      const res = await fetch(`/api/vehicles/${vehicle.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ isActive: !vehicle.isActive }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.error || 'Toggle failed');
+        return;
+      }
+      await load();
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleDeleteVehicle = async (vehicleId: string) => {
+    setDeletingId(vehicleId);
+    setDeleteError('');
+    try {
+      const res = await fetch(`/api/vehicles/${vehicleId}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        setDeleteError(d.error || 'Delete failed');
+        return;
+      }
+      setDeleteConfirm(null);
+      await load();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (!currentUser || currentUser.role !== 'owner') {
     return (
       <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -273,6 +330,43 @@ export default function OwnerDashboardPage() {
 
   return (
     <div className="pb-20 md:pb-12 flex-1">
+      <AlertDialog
+        open={Boolean(deleteConfirm)}
+        onOpenChange={(open) => {
+          if (!open && !deletingId) {
+            setDeleteConfirm(null);
+            setDeleteError('');
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this vehicle permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirm
+                ? `${deleteConfirm.brand} ${deleteConfirm.model} and its booking history will be permanently removed. This cannot be undone.`
+                : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError && (
+            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {deleteError}
+            </p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(deletingId)}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!deleteConfirm || Boolean(deletingId)}
+              onClick={() => deleteConfirm && handleDeleteVehicle(deleteConfirm.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+              {deletingId ? 'Deleting...' : 'Delete permanently'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Return & Settle Modal ─────────────────────────────────────── */}
       {settleBooking && (
@@ -732,19 +826,27 @@ export default function OwnerDashboardPage() {
                     const vBookings = myBookingRequests
                       .filter((b) => b.vehicleId === v.id)
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                    const hasActiveBookings = vBookings.some(
+                      (booking) => booking.status === 'PENDING' || booking.status === 'ACCEPTED'
+                    );
                     const open = expandedVehicle === v.id;
                     return (
                       <Card
                         key={v.id}
-                        className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm"
+                        className={cn(
+                          'overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-opacity',
+                          !v.isActive && 'opacity-65'
+                        )}
                       >
-                        <button
-                          type="button"
-                          className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/30 transition-colors"
-                          onClick={() => setExpandedVehicle(open ? null : v.id)}
-                        >
+                        <div className="flex flex-col gap-4 p-4 transition-colors hover:bg-muted/30 lg:flex-row lg:items-center">
                           <div className="relative w-24 h-20 rounded-xl overflow-hidden shrink-0 bg-muted">
-                            <Image src={v.vehiclePhotoUrl} alt="" fill className="object-cover" unoptimized />
+                            <Image
+                              src={v.vehiclePhotoUrl}
+                              alt={`${v.brand} ${v.model}`}
+                              fill
+                              className={cn('object-cover', !v.isActive && 'grayscale')}
+                              unoptimized
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -759,6 +861,17 @@ export default function OwnerDashboardPage() {
                               >
                                 {v.status}
                               </Badge>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[10px] font-semibold',
+                                  v.isActive
+                                    ? 'border-green-200 bg-green-50 text-green-700'
+                                    : 'border-border bg-muted text-muted-foreground'
+                                )}
+                              >
+                                {v.isActive ? 'ACTIVE' : 'INACTIVE'}
+                              </Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">
                               ৳{v.dailyRate.toLocaleString()}/day · {vBookings.length} request(s) ·{' '}
@@ -767,7 +880,23 @@ export default function OwnerDashboardPage() {
                               </span>
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                            <label className="flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-xs font-semibold">
+                              <Power
+                                className={cn(
+                                  'h-3.5 w-3.5',
+                                  v.isActive ? 'text-green-600' : 'text-muted-foreground'
+                                )}
+                              />
+                              <span>{v.isActive ? 'Active' : 'Inactive'}</span>
+                              <Switch
+                                checked={v.isActive}
+                                disabled={togglingId === v.id}
+                                aria-label={`${v.isActive ? 'Deactivate' : 'Activate'} ${v.brand} ${v.model}`}
+                                className="data-[state=checked]:bg-green-600"
+                                onCheckedChange={() => handleToggleActive(v)}
+                              />
+                            </label>
                             <Button
                               type="button"
                               variant="outline"
@@ -794,9 +923,42 @@ export default function OwnerDashboardPage() {
                               <Eye className="h-3.5 w-3.5 mr-1" />
                               View profile
                             </Button>
-                            {open ? <ChevronUp className="shrink-0" /> : <ChevronDown className="shrink-0" />}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span tabIndex={hasActiveBookings ? 0 : undefined}>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={hasActiveBookings}
+                                    className="h-9 gap-1 rounded-xl border-red-200 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    onClick={() => {
+                                      setDeleteError('');
+                                      setDeleteConfirm(v);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Delete
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              {hasActiveBookings && (
+                                <TooltipContent>
+                                  Resolve pending or accepted bookings before deleting.
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              aria-label={open ? 'Hide renter requests' : 'Show renter requests'}
+                              onClick={() => setExpandedVehicle(open ? null : v.id)}
+                            >
+                              {open ? <ChevronUp className="shrink-0" /> : <ChevronDown className="shrink-0" />}
+                            </Button>
                           </div>
-                        </button>
+                        </div>
                         {open && (
                           <div className="border-t border-border px-4 py-3 bg-muted/20">
                             {vBookings.length === 0 ? (

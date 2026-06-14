@@ -120,7 +120,7 @@ export async function POST(request: Request) {
   }
 
   const vehicle = await db.vehicle.findFirst({
-    where: { id: body.vehicleId, status: "APPROVED" },
+    where: { id: body.vehicleId, status: "APPROVED", isActive: true },
   });
 
   if (!vehicle) {

@@ -86,6 +86,7 @@ model Vehicle {
   vehiclePhotoUrl    String
   ownershipPaperUrl  String
   insurancePaperUrl  String?
+  isActive           Boolean         @default(true)
   status             VehicleStatus   @default(PENDING)
   reviewNote         String?
   reviewedAt         DateTime?

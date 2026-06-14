@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const vehicles = await db.vehicle.findMany({
     where: {
       status: "APPROVED",
+      isActive: true,
       ...(type === "BIKE" || type === "CAR" ? { category: type } : {}),
     },
     select: {

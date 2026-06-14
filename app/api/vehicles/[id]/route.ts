@@ -25,6 +25,7 @@ const vehicleSelect = {
   vehiclePhotoUrl: true,
   ownershipPaperUrl: true,
   insurancePaperUrl: true,
+  isActive: true,
   viewCount: true,
   status: true,
   reviewNote: true,
@@ -101,12 +102,12 @@ export async function GET(
   const isOwner = user?.role === "OWNER" && user.id === row.ownerId;
   const isAdmin = user?.role === "ADMIN";
 
-  if (row.status !== "APPROVED" && !isOwner && !isAdmin) {
+  if ((row.status !== "APPROVED" || !row.isActive) && !isOwner && !isAdmin) {
     return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
   }
 
   let viewCount = row.viewCount;
-  if (row.status === "APPROVED" && !isOwner && !isAdmin) {
+  if (row.status === "APPROVED" && row.isActive && !isOwner && !isAdmin) {
     const updated = await db.vehicle.update({
       where: { id },
       data: { viewCount: { increment: 1 } },
@@ -336,5 +337,113 @@ export async function PUT(
   return NextResponse.json({
     message: "Vehicle updated successfully",
     vehicle: updated,
+  });
+}
+
+/* ── PATCH — toggle isActive ─────────────────────────────────────── */
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user = await getAuthUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.role !== "OWNER") {
+    return NextResponse.json({ error: "Only owners can manage vehicles" }, { status: 403 });
+  }
+
+  const existing = await db.vehicle.findFirst({
+    where: { id },
+    select: { id: true, ownerId: true, isActive: true },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
+  }
+
+  if (existing.ownerId !== user.id) {
+    return NextResponse.json({ error: "You can only manage your own vehicles" }, { status: 403 });
+  }
+
+  const body = (await request.json()) as { isActive?: boolean };
+
+  if (typeof body.isActive !== "boolean") {
+    return NextResponse.json({ error: "isActive must be a boolean" }, { status: 400 });
+  }
+
+  const updated = await db.vehicle.update({
+    where: { id },
+    data: { isActive: body.isActive },
+    select: {
+      id: true,
+      brand: true,
+      model: true,
+      isActive: true,
+      status: true,
+    },
+  });
+
+  return NextResponse.json({
+    message: updated.isActive ? "Vehicle activated" : "Vehicle deactivated",
+    vehicle: updated,
+  });
+}
+
+/* ── DELETE — remove vehicle (only if no active bookings) ────────── */
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user = await getAuthUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.role !== "OWNER") {
+    return NextResponse.json({ error: "Only owners can delete vehicles" }, { status: 403 });
+  }
+
+  const existing = await db.vehicle.findFirst({
+    where: { id },
+    select: { id: true, ownerId: true, brand: true, model: true },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
+  }
+
+  if (existing.ownerId !== user.id) {
+    return NextResponse.json({ error: "You can only delete your own vehicles" }, { status: 403 });
+  }
+
+  // Check for active bookings (PENDING or ACCEPTED)
+  const activeBookings = await db.booking.count({
+    where: {
+      vehicleId: id,
+      status: { in: ["PENDING", "ACCEPTED"] },
+    },
+  });
+
+  if (activeBookings > 0) {
+    return NextResponse.json(
+      {
+        error: `Cannot delete — this vehicle has ${activeBookings} active booking(s). Cancel or complete them first.`,
+      },
+      { status: 409 }
+    );
+  }
+
+  await db.vehicle.delete({ where: { id } });
+
+  return NextResponse.json({
+    message: `${existing.brand} ${existing.model} has been permanently deleted`,
   });
 }
