@@ -1,0 +1,382 @@
+<div class="frame-868">
+  <div class="card-bkg"></div>
+  <div class="card-bkg2"></div>
+  <div class="rectangle-59"></div>
+  <div class="get-started">Get Started</div>
+  <div class="detail-spot-background"></div>
+  <div class="free">$79.99</div>
+  <div class="basic">Per Month</div>
+  <div class="premium-tag">
+    <div class="tag-background"></div>
+    <div class="ellipse-8"></div>
+    <div class="icon2">
+      <img class="blurred-image" src="blurred-image0.png" />
+      <img class="main-image" src="main-image0.png" />
+    </div>
+    <div class="premium">Premium</div>
+  </div>
+  <div class="feature-line-yes">
+    <div class="_25-active-jobs">Unlimited Job Posts</div>
+    <img class="active-icon" src="active-icon0.svg" />
+  </div>
+  <div class="feature-line-yes2">
+    <div class="instant-job-post-app">Instant Job Post Approval</div>
+    <img class="active-icon2" src="active-icon1.svg" />
+  </div>
+  <div class="feature-line-yes3">
+    <div class="premium-list-placeme">Premium List Placement</div>
+    <img class="active-icon3" src="active-icon2.svg" />
+  </div>
+  <div class="feature-line-yes4">
+    <div class="unlimited-job-applic">Unlimited Job Applicants</div>
+    <img class="active-icon4" src="active-icon3.svg" />
+  </div>
+</div>
+.frame-868,
+.frame-868 * {
+  box-sizing: border-box;
+}
+.frame-868 {
+  height: 343px;
+  position: relative;
+}
+.card-background {
+  position: absolute;
+  inset: 0;
+}
+.card-bkg {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 500px;
+  height: 343px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  box-shadow: -15px 50px 150px 0px rgba(49, 89, 211, 0.12);
+}
+.card-bkg2 {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 320px;
+  height: 343px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  box-shadow: -15px 50px 150px 0px rgba(49, 89, 211, 0.12);
+}
+.rectangle-59 {
+  background: linear-gradient(
+    129.98deg,
+    rgba(82, 180, 218, 1) 0%,
+    rgba(30, 62, 133, 1) 100%
+  );
+  border-radius: 24px;
+  width: 87.2%;
+  height: 20.99%;
+  position: absolute;
+  right: 6.4%;
+  left: 6.4%;
+  bottom: 9.33%;
+  top: 69.68%;
+  box-shadow: 10px 0px 50px 0px rgba(49, 89, 211, 0.28);
+}
+.get-started {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-SemiBold", sans-serif;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  top: calc(50% - -90.5px);
+}
+.detail-spot-background {
+  background: #ecf2ff;
+  border-radius: 16px;
+  width: 160px;
+  height: 180px;
+  position: absolute;
+  left: 32px;
+  top: 32px;
+}
+.group-766 {
+  position: absolute;
+  inset: 0;
+}
+.free {
+  background: linear-gradient(
+    132.56deg,
+    rgba(82, 180, 218, 1) 0%,
+    rgba(30, 62, 133, 1) 99.97627139091492%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  font-family: "Poppins-SemiBold", sans-serif;
+  font-size: 32px;
+  line-height: 45px;
+  font-weight: 600;
+  position: absolute;
+  right: 66.8%;
+  left: 11.8%;
+  width: 21.4%;
+  top: calc(50% - 87.5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.basic {
+  color: rgba(17, 20, 45, 0.4);
+  text-align: center;
+  font-family: "Poppins-Medium", sans-serif;
+  font-size: 20px;
+  line-height: 35px;
+  font-weight: 500;
+  position: absolute;
+  right: 67.2%;
+  left: 12.6%;
+  width: 20.2%;
+  top: calc(50% - 46.5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.premium-tag {
+  width: 146px;
+  height: 44px;
+  position: absolute;
+  left: 39px;
+  top: 10px;
+}
+.tag-background {
+  background: #c2eeff;
+  border-radius: 22px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+  top: 0%;
+  box-shadow: 0px 4px 4px 0px rgba(67, 145, 193, 0.21);
+}
+.icon {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-8 {
+  background: #ffffff;
+  border-radius: 50%;
+  width: 24.66%;
+  height: 81.82%;
+  position: absolute;
+  right: 72.6%;
+  left: 2.74%;
+  bottom: 9.09%;
+  top: 9.09%;
+}
+.icon2 {
+  width: 16.42px;
+  height: 27.36px;
+  position: static;
+}
+.blurred-image {
+  opacity: 0.4;
+  width: 10.68%;
+  height: 56.02%;
+  position: absolute;
+  right: 79.31%;
+  left: 10.01%;
+  bottom: 15.47%;
+  top: 28.51%;
+  filter: blur(2.72px);
+  object-fit: cover;
+}
+.main-image {
+  width: 10.4%;
+  height: 56.34%;
+  position: absolute;
+  right: 80.15%;
+  left: 9.44%;
+  bottom: 21.32%;
+  top: 22.34%;
+  object-fit: cover;
+}
+.premium {
+  color: #11142d;
+  text-align: left;
+  font-family: "Poppins-SemiBold", sans-serif;
+  font-size: 16px;
+  line-height: 15px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  position: absolute;
+  right: 10.96%;
+  left: 35.62%;
+  width: 53.42%;
+  top: 50%;
+  translate: 0 -50%;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.group-768 {
+  position: absolute;
+  inset: 0;
+}
+.feature-line-yes {
+  width: 256px;
+  height: 24px;
+  position: absolute;
+  left: 224px;
+  top: 34px;
+  overflow: hidden;
+}
+._25-active-jobs {
+  color: #323445;
+  text-align: left;
+  font-family: "Poppins-Medium", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  position: absolute;
+  right: 0%;
+  left: 12.5%;
+  width: 87.5%;
+  top: 50%;
+  translate: 0 -50%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.active-icon {
+  width: 7.81%;
+  height: 83.33%;
+  position: absolute;
+  right: 92.19%;
+  left: 0%;
+  bottom: 8.33%;
+  top: 8.33%;
+  overflow: visible;
+}
+.feature-line-yes2 {
+  width: 256px;
+  height: 24px;
+  position: absolute;
+  left: 224px;
+  top: 78px;
+  overflow: hidden;
+}
+.instant-job-post-app {
+  color: #323445;
+  text-align: left;
+  font-family: "Poppins-Medium", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  position: absolute;
+  right: 0%;
+  left: 12.5%;
+  width: 87.5%;
+  top: 50%;
+  translate: 0 -50%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.active-icon2 {
+  width: 7.81%;
+  height: 83.33%;
+  position: absolute;
+  right: 92.19%;
+  left: 0%;
+  bottom: 8.33%;
+  top: 8.33%;
+  overflow: visible;
+}
+.feature-line-yes3 {
+  width: 256px;
+  height: 24px;
+  position: absolute;
+  left: 224px;
+  top: 122px;
+  overflow: hidden;
+}
+.premium-list-placeme {
+  color: #323445;
+  text-align: left;
+  font-family: "Poppins-Medium", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  position: absolute;
+  right: 0%;
+  left: 12.5%;
+  width: 87.5%;
+  top: 50%;
+  translate: 0 -50%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.active-icon3 {
+  width: 7.81%;
+  height: 83.33%;
+  position: absolute;
+  right: 92.19%;
+  left: 0%;
+  bottom: 8.33%;
+  top: 8.33%;
+  overflow: visible;
+}
+.feature-line-yes4 {
+  width: 256px;
+  height: 24px;
+  position: absolute;
+  left: 224px;
+  top: 166px;
+  overflow: hidden;
+}
+.unlimited-job-applic {
+  color: #323445;
+  text-align: left;
+  font-family: "Poppins-Medium", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  position: absolute;
+  right: 0%;
+  left: 12.5%;
+  width: 87.5%;
+  top: 50%;
+  translate: 0 -50%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.active-icon4 {
+  width: 7.81%;
+  height: 83.33%;
+  position: absolute;
+  right: 92.19%;
+  left: 0%;
+  bottom: 8.33%;
+  top: 8.33%;
+  overflow: visible;
+}
+/* Figma Styles of your File */
+:root {
+  /* Colors */
+  /* Fonts */
+  /* Effects */
+}
+/* Figma Color Variables of your File */
+ 

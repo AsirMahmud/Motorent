@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vite-dev*.log
+.figma-reference/
+.screenshots/
+.DS_Store
+*.local
