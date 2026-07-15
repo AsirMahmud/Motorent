@@ -15,6 +15,12 @@ export type PublicVehicleApi = {
   seats: number;
   fuelType: string;
   transmission: string;
+  motor: string | null;
+  range: string | null;
+  battery: string | null;
+  tireSize: string | null;
+  topSpeed: string | null;
+  chargeTime: string | null;
   description: string | null;
   features: string[];
   dailyRate: number;
@@ -57,6 +63,12 @@ export function mapPublicVehicleApiToVehicle(v: PublicVehicleApi): Vehicle {
         ? v.fuelType
         : 'gasoline',
     seats: v.seats,
+    motor: v.motor?.trim() || undefined,
+    range: v.range?.trim() || undefined,
+    battery: v.battery?.trim() || undefined,
+    tireSize: v.tireSize?.trim() || undefined,
+    topSpeed: v.topSpeed?.trim() || undefined,
+    chargeTime: v.chargeTime?.trim() || undefined,
     features: v.features?.length ? v.features : [],
     rating: 0,
     reviewsCount: 0,

@@ -39,6 +39,12 @@ type VehicleData = {
   seats: number;
   fuelType: string;
   transmission: string;
+  motor: string | null;
+  range: string | null;
+  battery: string | null;
+  tireSize: string | null;
+  topSpeed: string | null;
+  chargeTime: string | null;
   description: string | null;
   features: string[];
   dailyRate: number;
@@ -71,6 +77,12 @@ export function OwnerEditVehicleForm({ vehicleId }: { vehicleId: string }) {
   const [seats, setSeats] = useState('2');
   const [fuelType, setFuelType] = useState('gasoline');
   const [transmission, setTransmission] = useState('manual');
+  const [motor, setMotor] = useState('');
+  const [range, setRange] = useState('');
+  const [battery, setBattery] = useState('');
+  const [tireSize, setTireSize] = useState('');
+  const [topSpeed, setTopSpeed] = useState('');
+  const [chargeTime, setChargeTime] = useState('');
   const [description, setDescription] = useState('');
   const [featuresText, setFeaturesText] = useState('');
   const [priceHourly, setPriceHourly] = useState('');
@@ -109,6 +121,12 @@ export function OwnerEditVehicleForm({ vehicleId }: { vehicleId: string }) {
       setSeats(String(v.seats));
       setFuelType(v.fuelType);
       setTransmission(v.transmission);
+      setMotor(v.motor || '');
+      setRange(v.range || '');
+      setBattery(v.battery || '');
+      setTireSize(v.tireSize || '');
+      setTopSpeed(v.topSpeed || '');
+      setChargeTime(v.chargeTime || '');
       setDescription(v.description || '');
       setFeaturesText(v.features.join(', '));
       setPriceHourly(v.priceHourly != null ? String(v.priceHourly) : '');
@@ -181,6 +199,12 @@ export function OwnerEditVehicleForm({ vehicleId }: { vehicleId: string }) {
           seats: Number(seats),
           fuelType,
           transmission,
+          motor: motor.trim() || null,
+          range: range.trim() || null,
+          battery: battery.trim() || null,
+          tireSize: tireSize.trim() || null,
+          topSpeed: topSpeed.trim() || null,
+          chargeTime: chargeTime.trim() || null,
           description: description.trim(),
           features: featuresText
             .split(',')
@@ -399,6 +423,36 @@ export function OwnerEditVehicleForm({ vehicleId }: { vehicleId: string }) {
                       <SelectItem value="automatic">Automatic</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3">
+                <div className="text-sm font-black uppercase tracking-wide text-muted-foreground">Technical details</div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>Motor</Label>
+                    <Input placeholder="e.g. 1500W" value={motor} onChange={(e) => setMotor(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Range</Label>
+                    <Input placeholder="e.g. 80 KM" value={range} onChange={(e) => setRange(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Battery</Label>
+                    <Input placeholder="e.g. 72V 30Ah LiFePO4" value={battery} onChange={(e) => setBattery(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Tire size</Label>
+                    <Input placeholder="e.g. 12" value={tireSize} onChange={(e) => setTireSize(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Top speed</Label>
+                    <Input placeholder="e.g. 75 KM/h" value={topSpeed} onChange={(e) => setTopSpeed(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Charge time</Label>
+                    <Input placeholder="e.g. 6-8 hours" value={chargeTime} onChange={(e) => setChargeTime(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
                 </div>
               </div>
 

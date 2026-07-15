@@ -37,6 +37,12 @@ export type Vehicle = {
   transmission: 'manual' | 'automatic';
   fuelType: 'gasoline' | 'diesel' | 'electric' | 'hybrid';
   seats: number;
+  motor?: string;
+  range?: string;
+  battery?: string;
+  tireSize?: string;
+  topSpeed?: string;
+  chargeTime?: string;
   features: string[];
   rating: number;
   reviewsCount: number;

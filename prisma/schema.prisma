@@ -78,6 +78,12 @@ model Vehicle {
   seats              Int             @default(2)
   fuelType           String          @default("gasoline")
   transmission       String          @default("manual")
+  motor              String?
+  range              String?
+  battery            String?
+  tireSize           String?
+  topSpeed           String?
+  chargeTime         String?
   description        String?         @db.Text
   features           String[]        @default([])
   dailyRate          Int

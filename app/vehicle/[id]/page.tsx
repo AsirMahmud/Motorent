@@ -11,7 +11,7 @@ import {
   Star, MapPin, Fuel, Users, Zap,
   ShieldCheck, Check, Info, ArrowLeft,
   Clock, CalendarDays, CalendarRange, Layers, LayoutDashboard,
-  FileText, AlertCircle,
+  FileText, AlertCircle, Gauge, Battery,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -144,6 +144,15 @@ export default function VehicleDetailPage() {
       </div>
     );
   }
+
+  const technicalSpecs = [
+    { label: 'Motor', value: vehicle.motor, icon: <Zap className="text-sky-600" size={22} />, tone: 'bg-sky-50' },
+    { label: 'Range', value: vehicle.range, icon: <Gauge className="text-blue-600" size={22} />, tone: 'bg-blue-50' },
+    { label: 'Battery', value: vehicle.battery, icon: <Battery className="text-emerald-600" size={22} />, tone: 'bg-emerald-50' },
+    { label: 'Tire size', value: vehicle.tireSize, icon: <ShieldCheck className="text-slate-600" size={22} />, tone: 'bg-slate-50' },
+    { label: 'Top speed', value: vehicle.topSpeed, icon: <Gauge className="text-orange-600" size={22} />, tone: 'bg-orange-50' },
+    { label: 'Charge time', value: vehicle.chargeTime, icon: <Clock className="text-purple-600" size={22} />, tone: 'bg-purple-50' },
+  ].filter((spec) => spec.value);
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans pb-12">
@@ -286,6 +295,30 @@ export default function VehicleDetailPage() {
                   <div className="font-black">Listing ID: {vehicle.registrationNumber.split('-').pop()}</div>
                 </div>
               </div>
+
+              {technicalSpecs.length > 0 && (
+                <div className="space-y-5">
+                  <div>
+                    <Badge variant="outline" className="mb-3 rounded-full border-primary/20 bg-primary/5 px-4 py-1 text-xs font-black uppercase tracking-widest text-primary">
+                      Technical details
+                    </Badge>
+                    <h3 className="font-display text-3xl font-medium tracking-[-0.03em] text-primary">Full Specifications</h3>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {technicalSpecs.map((spec) => (
+                      <div key={spec.label} className="flex min-h-24 items-center gap-5 rounded-2xl border border-border/70 bg-white p-5 shadow-sm">
+                        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${spec.tone}`}>
+                          {spec.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase tracking-wide text-muted-foreground">{spec.label}</p>
+                          <p className="mt-1 break-words text-lg font-black text-foreground">{spec.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className="space-y-4">

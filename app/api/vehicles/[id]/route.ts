@@ -17,6 +17,12 @@ const vehicleSelect = {
   seats: true,
   fuelType: true,
   transmission: true,
+  motor: true,
+  range: true,
+  battery: true,
+  tireSize: true,
+  topSpeed: true,
+  chargeTime: true,
   description: true,
   features: true,
   dailyRate: true,
@@ -48,6 +54,12 @@ function optionalPositiveInt(value: unknown): number | null {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 0) return null;
   return Math.floor(n);
+}
+
+function optionalSpecText(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text || null;
 }
 
 function parseOwnerMapPin(body: Record<string, unknown>): { latitude: number; longitude: number } | null {
@@ -142,6 +154,12 @@ type VehicleUpdateBody = {
   seats?: number;
   fuelType?: string;
   transmission?: string;
+  motor?: string | null;
+  range?: string | null;
+  battery?: string | null;
+  tireSize?: string | null;
+  topSpeed?: string | null;
+  chargeTime?: string | null;
   description?: string;
   features?: string[];
   dailyRate?: number;
@@ -240,6 +258,13 @@ export async function PUT(
     }
     data.transmission = trans;
   }
+
+  if (body.motor !== undefined) data.motor = optionalSpecText(body.motor);
+  if (body.range !== undefined) data.range = optionalSpecText(body.range);
+  if (body.battery !== undefined) data.battery = optionalSpecText(body.battery);
+  if (body.tireSize !== undefined) data.tireSize = optionalSpecText(body.tireSize);
+  if (body.topSpeed !== undefined) data.topSpeed = optionalSpecText(body.topSpeed);
+  if (body.chargeTime !== undefined) data.chargeTime = optionalSpecText(body.chargeTime);
 
   if (body.description !== undefined) {
     data.description = body.description.trim() || null;

@@ -16,6 +16,12 @@ type VehicleBody = {
   seats?: number;
   fuelType?: string;
   transmission?: string;
+  motor?: string | null;
+  range?: string | null;
+  battery?: string | null;
+  tireSize?: string | null;
+  topSpeed?: string | null;
+  chargeTime?: string | null;
   description?: string;
   features?: string[];
   dailyRate?: number;
@@ -64,6 +70,12 @@ function optionalPositiveInt(value: unknown): number | null {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 0) return null;
   return Math.floor(n);
+}
+
+function optionalSpecText(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text || null;
 }
 
 export async function POST(request: Request) {
@@ -162,6 +174,12 @@ export async function POST(request: Request) {
       seats,
       fuelType: fuel,
       transmission: trans,
+      motor: optionalSpecText(body.motor),
+      range: optionalSpecText(body.range),
+      battery: optionalSpecText(body.battery),
+      tireSize: optionalSpecText(body.tireSize),
+      topSpeed: optionalSpecText(body.topSpeed),
+      chargeTime: optionalSpecText(body.chargeTime),
       description: body.description?.trim() || null,
       features,
       dailyRate: daily,

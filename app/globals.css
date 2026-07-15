@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'leaflet/dist/leaflet.css';
-@import '@uploadthing/react/styles.css';
+@import '../node_modules/@uploadthing/react/dist/index.css';
 
 @custom-variant dark (&:is(.dark *));
 
