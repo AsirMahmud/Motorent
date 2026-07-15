@@ -291,8 +291,8 @@ export default function VehicleDetailPage() {
                 </div>
                 <div className="p-4 bg-muted/30 rounded-2xl flex flex-col gap-2 border border-border/50">
                   <ShieldCheck className="text-primary" size={20} />
-                  <div className="text-xs font-bold text-muted-foreground uppercase">Verified</div>
-                  <div className="font-black">Listing ID: {vehicle.registrationNumber.split('-').pop()}</div>
+                  <div className="text-xs font-bold text-muted-foreground uppercase">Registration</div>
+                  <div className="break-words font-black">{vehicle.registrationNumber}</div>
                 </div>
               </div>
 
